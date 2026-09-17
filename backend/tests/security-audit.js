@@ -45,7 +45,7 @@ function boot(code, env) {
 secao('Segredos no que o navegador recebe');
 
 // Tudo que é servido como arquivo público (allowlist do server.js) + a página VIP.
-const ARQUIVOS_PUBLICOS = ['index.html', 'image-tools.js', 'fonts.css', 'app.js', 'pending-checkouts.js', 'buyer-account.html', 'buyer-account.js', 'style.css', 'vip.html', 'vip.css', 'vip.js', 'tips.js'];
+const ARQUIVOS_PUBLICOS = ['index.html', 'image-tools.js', 'fonts.css', 'app.js', 'analytics.js', 'push.js', 'push-sw.js', 'continue.html', 'continue.js', 'pending-checkouts.js', 'buyer-account.html', 'buyer-account.js', 'style.css', 'vip.html', 'vip.css', 'vip.js', 'tips.js'];
 
 const PROIBIDO = [
   ['SIGILOPAY_SECRET_KEY', /SIGILOPAY_SECRET_KEY|x-secret-key/i],
@@ -142,7 +142,7 @@ check('allowlist de arquivos estáticos encontrada', Boolean(allowlist));
 if (allowlist) {
   const lista = allowlist[1].split(',').map((item) => item.trim().replace(/['"]/g, '')).filter(Boolean);
   check('allowlist só tem página, script, estilo e imagem de perfil',
-    lista.every((item) => /^(index\.html|app\.js|style\.css|vip\.(html|css|js)|buyer-account\.(html|css|js)|pending-checkouts\.js|image-tools\.js|fonts\.css|avatar\.jpg|cover\.jpg|verified-ayla\.png|favicon\.ico|login\.(html|css|js)|admin-mode\.(css|js)|admin-loader\.js|frame\.(css|js)|carousel\.(css|js)|tips\.(css|js))$/.test(item)),
+    lista.every((item) => /^(index\.html|analytics\.js|continue\.(?:html|js)|push(?:-sw)?\.js|app\.js|style\.css|vip\.(html|css|js)|buyer-account\.(html|css|js)|pending-checkouts\.js|image-tools\.js|fonts\.css|avatar\.jpg|cover\.jpg|verified-ayla\.png|favicon\.ico|login\.(html|css|js)|admin-mode\.(css|js)|admin-loader\.js|frame\.(css|js)|carousel\.(css|js)|tips\.(css|js)|analytics\.js|continue\.(html|js)|push(?:-sw)?\.js)$/.test(item)),
     lista.join(' '));
 }
 

@@ -17,6 +17,7 @@
     let old;
     try { old = JSON.parse(localStorage.getItem(key)); } catch (_) {}
     const value = { ...old, ...item, createdAt: old?.createdAt || item.createdAt || Date.now() };
+    if(value.payment?.pix)value.payment={...value.payment,pix:undefined}; // retrieve the code from the server after validating possession
     localStorage.setItem(key, JSON.stringify(value));
     memory.set(key, value);
     return value;
@@ -40,7 +41,7 @@
         if (!key?.startsWith(PREFIX)) continue;
         try {
           const item = JSON.parse(localStorage.getItem(key));
-          if (valid(item) && key === PREFIX + item.token) found.push(item);
+          if (valid(item) && key === PREFIX + item.token) { if(item.payment?.pix){item.payment={...item.payment,pix:undefined};localStorage.setItem(key,JSON.stringify(item));} found.push(item); }
         } catch (_) {}
       }
       return found.sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));

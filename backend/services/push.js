@@ -1,0 +1,13 @@
+const crypto=require('node:crypto');const {getDb}=require('../db/database');
+const available=()=>Boolean(process.env.VAPID_PUBLIC_KEY&&process.env.VAPID_PRIVATE_KEY&&process.env.VAPID_SUBJECT);
+function safe(subscription){if(!subscription||typeof subscription!=='object')return false;let url;try{url=new URL(subscription.endpoint);}catch(_){return false;}
+ if(url.protocol!=='https:'||url.username||url.password||url.port||subscription.endpoint.length>2048)return false;
+ if(!/(^|\.)(fcm\.googleapis\.com|push\.services\.mozilla\.com|push\.apple\.com)$/.test(url.hostname)&&!/^wns[0-9]*\.notify\.windows\.com$/.test(url.hostname))return false;
+ return typeof subscription.keys?.p256dh==='string'&&/^[A-Za-z0-9_-]{80,120}$/.test(subscription.keys.p256dh)&&typeof subscription.keys?.auth==='string'&&/^[A-Za-z0-9_-]{16,40}$/.test(subscription.keys.auth);
+}
+function configure(){const wp=require('web-push');wp.setVapidDetails(process.env.VAPID_SUBJECT,process.env.VAPID_PUBLIC_KEY,process.env.VAPID_PRIVATE_KEY);return wp;}
+async function subscribe(order,subscription){if(!available())throw Object.assign(new Error('Avisos indisponíveis.'),{status:503});if(!safe(subscription))throw Object.assign(new Error('Inscrição inválida.'),{status:400});const id=crypto.createHash('sha256').update(subscription.endpoint).digest('hex');const db=await getDb();await db.run('INSERT INTO push_subscriptions(id,order_id,endpoint,p256dh,auth,active) VALUES (?,?,?,?,?,1) ON CONFLICT(id) DO UPDATE SET order_id=excluded.order_id,p256dh=excluded.p256dh,auth=excluded.auth,active=1',id,order.id,subscription.endpoint,subscription.keys.p256dh,subscription.keys.auth);return {enabled:true};}
+async function remove(order,id){if(!/^[a-f0-9]{64}$/.test(id||''))return;await(await getDb()).run('UPDATE push_subscriptions SET active=0 WHERE id=? AND order_id=?',id,order.id);}
+async function notifyPaid(order){if(!available())return;const db=await getDb(),rows=await db.all('SELECT * FROM push_subscriptions WHERE order_id=? AND active=1 AND notified_at IS NULL LIMIT 5',order.id);if(!rows.length)return;const wp=configure();for(const row of rows){try{await wp.sendNotification({endpoint:row.endpoint,keys:{p256dh:row.p256dh,auth:row.auth}},JSON.stringify({title:'Pagamento confirmado',body:'Seu pagamento foi confirmado. Abra para criar ou acessar sua conta.',url:order.claim_required?'/criar-acesso?order='+encodeURIComponent(order.public_id):'/meu-acesso'}),{TTL:120,timeout:8000});await db.run('UPDATE push_subscriptions SET notified_at=CURRENT_TIMESTAMP WHERE id=? AND notified_at IS NULL',row.id);}catch(e){if([404,410].includes(e.statusCode))await db.run('UPDATE push_subscriptions SET active=0 WHERE id=?',row.id);}}
+}
+module.exports={available,safe,subscribe,remove,notifyPaid};

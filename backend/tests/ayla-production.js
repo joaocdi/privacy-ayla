@@ -66,7 +66,11 @@ if (!realDbUrl) {
     on() {}
     async query(sql, values = []) {
       const r = values.length ? await engine.query(sql, values) : (await engine.exec(sql)).at(-1);
-      return { rows: r?.rows || [], rowCount: r?.affectedRows ?? r?.rows?.length ?? 0 };
+      // PGlite returns timestamp columns as Date in the host timezone. The real
+      // pg adapter returns UTC-style SQL strings, so emulate that contract.
+      const timestamp = d => [d.getFullYear(), String(d.getMonth()+1).padStart(2,'0'), String(d.getDate()).padStart(2,'0')].join('-')+' '+[d.getHours(),d.getMinutes(),d.getSeconds()].map(v=>String(v).padStart(2,'0')).join(':');
+      const rows=(r?.rows||[]).map(row=>Object.fromEntries(Object.entries(row).map(([key,value])=>[key,value instanceof Date?timestamp(value):value])));
+      return { rows, rowCount: r?.affectedRows ?? r?.rows?.length ?? 0 };
     }
     async connect() { return { query: Pool.prototype.query.bind(this), release() {} }; }
     async end() {}
@@ -250,7 +254,9 @@ const http = require('node:http');
     assert.equal(grants[0].product_id, 'ayla_monthly');
     assert.equal(grants[0].grant_type, 'subscription');
     const expires = grants[0].expires_at instanceof Date ? grants[0].expires_at : new Date(String(grants[0].expires_at).replace(' ', 'T') + 'Z');
-    const days = (expires - Date.now()) / 86400000;
+    const paidAt = (await db.get('SELECT paid_at FROM orders WHERE id=?', monthly.id)).paid_at;
+    const paid = paidAt instanceof Date ? paidAt : new Date(String(paidAt).replace(' ', 'T') + 'Z');
+    const days = (expires - paid) / 86400000;
     assert.ok(days > 29.9 && days <= 30.01, '30 dias');
 
     assert.equal((await hook(tx(whats))).status, 200);

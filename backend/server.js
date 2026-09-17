@@ -95,11 +95,12 @@ const accessRateLimit = rateLimit({ windowMs: 60 * 1000, max: 20 });
 // A tela de entrada da criadora e o modo administrador embutido nas páginas
 // entram aqui de propósito: não carregam segredo nenhum, e quem decide se
 // existe sessão de admin é o backend, não estes arquivos.
-const publicFiles = ['fonts.css', 'image-tools.js', 'index.html', 'app.js', 'style.css', 'avatar.jpg', 'cover.jpg', 'verified-ayla.png', 'favicon.ico',
+const publicFiles = ['push.js','push-sw.js','continue.html','continue.js','analytics.js','fonts.css', 'image-tools.js', 'index.html', 'app.js', 'style.css', 'avatar.jpg', 'cover.jpg', 'verified-ayla.png', 'favicon.ico',
   'vip.html', 'vip.css', 'vip.js',
   'tips.js','tips.css','pending-checkouts.js','buyer-account.html','buyer-account.css','buyer-account.js','login.html', 'login.css', 'login.js', 'admin-mode.css', 'admin-mode.js', 'admin-loader.js', 'frame.js', 'frame.css', 'carousel.js', 'carousel.css'];
 app.use('/fonts', express.static(path.join(__dirname, '..', 'fonts'), { index: false, dotfiles: 'deny', maxAge: '1y', immutable: true }));
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, '..', 'index.html')));
+app.get('/continuar', (req,res)=>res.sendFile(path.join(__dirname,'..','continue.html')));
 // A página VIP é pública como ARQUIVO; o conteúdo dela não. Sem assinatura
 // ativa ela não recebe feed nem mídia — só a tela de acesso negado/expirado.
 app.get('/vip', (req, res) => res.sendFile(path.join(__dirname, '..', 'vip.html')));
@@ -212,6 +213,7 @@ app.get('/api/contact/:orderId', authorizeOrder, async (req, res) => {
     const whatsapp = contactUrl();
     if (!whatsapp) return res.status(503).json({ error: 'Contato temporariamente indisponível.' });
     await require('./services/conversions').record('whatsapp_clicked',req.order.product_id,req.order.public_id).catch(()=>{});
+    await require('./services/analytics').write('whatsapp_click',null,req.order.product_id,req.order.public_id,'/vip').catch(()=>{});
     res.json({ whatsapp });
   } catch (_) { res.status(503).json({ error: 'Não foi possível consultar seu contato.' }); }
 });
@@ -220,7 +222,11 @@ app.post('/api/conversions/checkout', rateLimit({windowMs:60000,max:20}), async 
  if(typeof productId!=='string'||!Object.hasOwn(products,productId)||typeof checkoutToken!=='string'||!/^[a-f0-9]{64}$/.test(checkoutToken))return res.status(400).json({error:'Evento inválido.'});
  try{await require('./services/conversions').record('checkout_opened',productId,checkoutToken);res.status(204).end();}catch(_){res.status(503).end();}
 });
+app.get('/api/push/config',(req,res)=>res.json({available:require('./services/push').available(),publicKey:require('./services/push').available()?process.env.VAPID_PUBLIC_KEY:null}));
+app.post('/api/orders/:orderId/push',authorizeOrder,rateLimit({windowMs:60000,max:5}),async(req,res)=>{try{if(req.order.status!=='PENDING')return res.status(409).json({error:'Pedido indisponível.'});res.json(await require('./services/push').subscribe(req.order,req.body?.subscription));}catch(e){res.status(e.status||503).json({error:'Avisos indisponíveis.'});}});
+app.delete('/api/orders/:orderId/push',authorizeOrder,async(req,res)=>{await require('./services/push').remove(req.order,req.body?.id);res.json({enabled:false});});
 app.get('/api/tips/config', (req,res) => { const p=Object.values(products).find(p=>p.type==='tip');res.json({productId:p.id,minCents:p.minCents,maxCents:p.maxCents,available:!paymentProvider.requiresClient&&!paymentProvider.unavailable}); });
+app.post('/api/analytics/event', rateLimit({windowMs:60000,max:60}), async(req,res)=>{try{await require('./services/analytics').client(req);res.status(204).end();}catch(e){res.status(e.status||503).json({error:e.status?'Evento inválido.':'Registro indisponível.'});}});
 app.get('/api/catalog', (req, res) => res.json({ accountFlow:buyerAccounts.enabled(), staging:process.env.APP_ENV==='staging', requiresClient: paymentProvider.requiresClient, mock: ['mock','staging'].includes(paymentProvider.name), products: Object.values(products).filter(p => p.enabled !== false).map(p => ({ id: p.id, name: p.name, price: p.price })) }));
 function bearer(req) { return /^Bearer ([a-f0-9]{64})$/.exec(req.get('authorization') || '')?.[1]; }
 function owns(req, order) { return buyerRecovery.owns(order, bearer(req)); }
@@ -230,7 +236,7 @@ async function authorizeOrder(req, res, next) {
     const buyer=order?.claim_required?await buyerAccounts.session(req):null;
     const accountOwns=buyer && order?.buyer_id===buyer.user_id;
     const claimOwns=order?.claim_required && !order.buyer_id && matches(bearer(req),order.claim_token_hash);
-    const allowed=order?.claim_required ? accountOwns || (req.path.endsWith('/status') && claimOwns) : await owns(req,order);
+    const allowed=order?.claim_required ? accountOwns || ((req.path.endsWith('/status') || req.path.endsWith('/pix') || req.path.endsWith('/push')) && claimOwns) : await owns(req,order);
     if (!allowed) return res.status(403).json({ error: 'Acesso negado.' });
     req.order = order; next();
   } catch (error) { next(error); }
@@ -474,6 +480,7 @@ app.post('/api/payments/pix', pixRateLimit, async (req, res) => {
     if (creationClaimed) {
       const payment = await paymentProvider.createPixPayment({ orderId: order.public_id, product: { ...product, price: Number(order.amount) }, client });
       await updateOrderPayment(order.public_id, payment);
+      await require('./services/analytics').write('pix_generated',null,order.product_id,order.public_id).catch(()=>{});
     }
     order = await getOrderByPublicId(order.public_id);
     if (order.status === 'CREATING') return res.status(202).json({ orderId: order.public_id, status: order.status });
@@ -502,8 +509,17 @@ app.post('/api/payments/pix', pixRateLimit, async (req, res) => {
   }
 });
 
+// Resumption returns PIX only after server-side possession and status checks.
+app.get('/api/orders/:orderId/pix', authorizeOrder, async(req,res)=>{
+ const order=req.order;
+ if(order.status!=='PENDING'||(order.expires_at&&Date.parse(String(order.expires_at).replace(' ','T')+'Z')<=Date.now()))return res.status(409).json({error:'PIX indisponível.',status:'EXPIRED'});
+ res.set('Cache-Control','no-store');
+ res.json({orderId:order.public_id,status:order.status,product:{id:order.product_id,name:products[order.product_id]?.name||'Produto',price:Number(order.amount)},expiresAt:order.expires_at,pix:{copyPaste:order.pix_copy_paste,qrCode:order.pix_qr_code},accountFlow:!!order.claim_required,mock:['mock','staging'].includes(order.payment_provider),staging:order.payment_provider==='staging'});
+});
+
 // GET /api/orders/:orderId/status
 app.get('/api/orders/:orderId/status', authorizeOrder, async (req, res) => {
+  res.set('Cache-Control', 'no-store');
   try {
     const { orderId } = req.params;
     const order = await recoverCreation(await getOrderByPublicId(orderId));
@@ -517,7 +533,7 @@ app.get('/api/orders/:orderId/status', authorizeOrder, async (req, res) => {
     // Only update frontend state, does NOT decide if it's approved.
     return res.json({
       orderId: order.public_id,
-      status: displayStatus, expiresAt: order.expires_at,
+      status: displayStatus, expiresAt: order.expires_at, productId:order.product_id, amount:Number(order.amount),
       retryable: order.creation_phase === 'retryable' || (order.status === 'CREATING' && order.creation_phase === 'ready'),
       requiresReview: order.status === 'FAILED' && order.creation_phase !== 'retryable',
       accountFlow:!!order.claim_required, needsClaim:!!order.claim_required&&!order.buyer_id&&order.status==='PAID',

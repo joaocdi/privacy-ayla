@@ -28,7 +28,7 @@ async function createOrUpdateEntitlement(orderId, productId) {
   });
 }
 async function confirmPayment(publicId, expected = null) {
-  return transaction(async db => {
+  const result = await transaction(async db => {
     let order = await db.get('SELECT * FROM orders WHERE public_id=?', publicId);
     if (!order || !order.provider_payment_id) throw new Error('Payment not persisted');
     require('../creator').assertProduct(order.product_id);
@@ -45,6 +45,9 @@ async function confirmPayment(publicId, expected = null) {
     }
     return insertEntitlement(db, order);
   });
+  const settled = await (await getDb()).get('SELECT product_id,purchase_kind FROM orders WHERE public_id=? AND status=\'PAID\'', publicId);
+  if (settled) { const paidOrder=await (await getDb()).get('SELECT * FROM orders WHERE public_id=?',publicId);await require('./push').notifyPaid(paidOrder).catch(()=>{}); const analytics=require('./analytics'); await analytics.write('payment_confirmed',null,settled.product_id,publicId).catch(()=>{}); if(settled.purchase_kind==='tip')await analytics.write('tip_paid',null,settled.product_id,publicId).catch(()=>{}); }
+  return result;
 }
 
 async function getActiveEntitlementByTelegramUserId(telegramUserId) {

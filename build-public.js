@@ -21,6 +21,7 @@ const CASCA = [
   'tips.js', 'tips.css', 'vip.js', 'vip.css',
   'login.js', 'login.css', 'buyer-account.js', 'buyer-account.css',
   'admin-loader.js', 'admin-mode.js', 'admin-mode.css', 'pending-checkouts.js',
+  'analytics.js', 'push.js', 'push-sw.js', 'continue.html', 'continue.js',
   'avatar.jpg', 'cover.jpg', 'favicon.ico',
 ];
 

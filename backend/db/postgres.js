@@ -194,7 +194,7 @@ async function initDb() {
   // Depois das colunas existirem: a mídia única de cada post vira o item 1.
   await require('./content-migrations').backfillMedia(await getDb());
   // No public Data API access: all content/admin operations go through our backend.
-  for (const table of ['conversion_events', 'media_deletions', 'creator_profiles', 'vip_posts', 'vip_post_media', 'vip_content_settings', 'vip_post_likes', 'admin_sessions', 'admin_login_limits', 'vip_uploads', 'admin_users',
+  for (const table of ['push_subscriptions','analytics_events', 'conversion_events', 'media_deletions', 'creator_profiles', 'vip_posts', 'vip_post_media', 'vip_content_settings', 'vip_post_likes', 'admin_sessions', 'admin_login_limits', 'vip_uploads', 'admin_users',
     // Tabelas só do backend: o dono (backend) ignora RLS; anon/authenticated ficam sem acesso.
     'orders', 'entitlements', 'access_tokens', 'entitlement_duplicates_archive']) {
     await getPool().query(`ALTER TABLE ${table} ENABLE ROW LEVEL SECURITY`);

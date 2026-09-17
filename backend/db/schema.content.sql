@@ -125,3 +125,17 @@ CREATE TABLE IF NOT EXISTS conversion_events (
  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 CREATE INDEX IF NOT EXISTS conversion_events_date ON conversion_events(created_at);
+
+CREATE TABLE IF NOT EXISTS analytics_events (
+ id TEXT PRIMARY KEY, creator TEXT NOT NULL, event_name TEXT NOT NULL,
+ session_id TEXT, order_id TEXT, product_id TEXT, page TEXT NOT NULL,
+ created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS analytics_events_creator_date ON analytics_events(creator,created_at);
+
+CREATE TABLE IF NOT EXISTS push_subscriptions (
+ id TEXT PRIMARY KEY,order_id INTEGER NOT NULL,endpoint TEXT NOT NULL,p256dh TEXT NOT NULL,auth TEXT NOT NULL,
+ active INTEGER NOT NULL DEFAULT 1,notified_at TIMESTAMP,created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ FOREIGN KEY(order_id) REFERENCES orders(id)
+);
+CREATE INDEX IF NOT EXISTS push_order_active ON push_subscriptions(order_id,active);

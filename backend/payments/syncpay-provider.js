@@ -62,6 +62,6 @@ module.exports = {
     if (!response.ok) throw unavailable('SyncPay cash-in HTTP ' + response.status);
     const data = await response.json();
     if (typeof data.identifier !== 'string' || !data.identifier || data.identifier.length > 200 || typeof data.pix_code !== 'string' || !data.pix_code || data.pix_code.length > 10000) throw unavailable('Resposta PIX SyncPay incompleta.');
-    return {status:'PENDING',providerPaymentId:data.identifier,pix:{copyPaste:data.pix_code,qrCode:await renderQrCode(data.pix_code)}};
+    return {status:'PENDING',providerPaymentId:data.identifier,expiresAt:typeof data.expires_at==='string'?data.expires_at:null,pix:{copyPaste:data.pix_code,qrCode:await renderQrCode(data.pix_code)}};
   }
 };

@@ -63,6 +63,7 @@ function install(app) {
   }));
 
   api.use(auth.requireSession);
+  api.get('/funnel', wrap(async(req,res)=>{const days=Number(req.query.days);if(![1,7,30].includes(days))return res.status(400).json({error:'Período inválido.'});res.json(await require('./services/analytics').funnel(days));}));
   api.get('/conversions', wrap(async (req,res)=>res.json(await require('./services/conversions').summary())));
   api.get('/profile', wrap(async (req, res) => res.json(await profile.get())));
   api.put('/profile', wrap(async (req, res) => res.json(await profile.save(req.body, req.admin.id))));

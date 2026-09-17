@@ -62,6 +62,7 @@ async function updateOrderPayment(id, payment) {
   const result = await (await getDb()).run("UPDATE orders SET status='PENDING', creation_phase='complete', provider_payment_id=?, pix_copy_paste=?, pix_qr_code=?, webhook_token_hash=? WHERE public_id=? AND (status='CREATING' OR (status='FAILED' AND creation_phase='uncertain'))",
     payment.providerPaymentId, payment.pix.copyPaste, payment.pix.qrCode, payment.webhookToken ? hash(payment.webhookToken) : null, id);
   if (!result.changes) throw new Error('Payment persistence rejected');
+  if(payment.expiresAt){const ms=Date.parse(payment.expiresAt);if(Number.isFinite(ms)&&ms>Date.now())await (await getDb()).run('UPDATE orders SET expires_at=? WHERE public_id=?',new Date(ms).toISOString().slice(0,19).replace('T',' '),id);}
 }
 // Claim before contacting the provider. A competing request may read the order,
 // but only this atomic transition authorizes an outbound cash-in request.

@@ -389,7 +389,30 @@ function openPaidAccount(pending, needsClaim) {
   else AylaCheckouts.remove(pending);
   location.assign(needsClaim ? '/criar-acesso?order=' + encodeURIComponent(pending.payment.orderId) : '/meu-acesso');
 }
+let pixTimer=null;const pendingSeen=new Set();const priorPending=new Set((window.AylaCheckouts?.list()||[]).map(x=>x.payment?.orderId).filter(Boolean));
+function startPixTimer(expiresAt,version,token){clearInterval(pixTimer);const target=document.getElementById('pixExpiry');const ms=expiresAt?Date.parse(String(expiresAt).replace(' ','T')+(String(expiresAt).includes('Z')?'':'Z')):NaN;
+ if(!Number.isFinite(ms)){target.textContent='Prazo não informado pela operadora';return;}
+ const tick=()=>{if(version!==checkoutVersion){clearInterval(pixTimer);return;}const left=Math.max(0,Math.ceil((ms-Date.now())/1000));target.textContent=left?('Tempo restante: '+String(Math.floor(left/60)).padStart(2,'0')+':'+String(left%60).padStart(2,'0')):'Prazo encerrado';if(!left){clearInterval(pixTimer);window.FunnelAnalytics?.track('pix_expired',selectedProduct,currentOrderId);showRegenerate(true,selectedProduct);}};tick();pixTimer=setInterval(tick,1000);
+}
+function showRegenerate(enabled,productId){const fresh=document.getElementById('pixRegenerate'),small=document.getElementById('pixSmallerPlan');if(!fresh)return;fresh.hidden=!enabled;small.hidden=!enabled||['monthly','ayla_monthly','whatsapp_unlock','ayla_whatsapp_unlock'].includes(productId);fresh.onclick=()=>location.assign('/continuar?order='+encodeURIComponent(currentOrderId)+'&regen=1');small.onclick=()=>location.assign('/continuar?order='+encodeURIComponent(currentOrderId)+'&smaller=1');}
 let pendingNoticeVersion = 0;
+let pendingNoticeTimer = null;
+function updatePendingNoticeCountdown() {
+  clearInterval(pendingNoticeTimer);
+  const nodes = [...document.querySelectorAll('[data-pix-expires]')];
+  if (!nodes.length) return;
+  const tick = () => {
+    let finished = false;
+    for (const node of nodes) {
+      const seconds = Math.max(0, Math.ceil((Number(node.dataset.pixExpires) - Date.now()) / 1000));
+      node.textContent = seconds ? 'Restam ' + String(Math.floor(seconds / 60)).padStart(2, '0') + ':' + String(seconds % 60).padStart(2, '0') : 'Prazo encerrado';
+      if (!seconds) finished = true;
+    }
+    if (finished) { clearInterval(pendingNoticeTimer); refreshPendingPixNotice(); }
+  };
+  tick();
+  if (!nodes.some(node => Date.now() >= Number(node.dataset.pixExpires))) pendingNoticeTimer = setInterval(tick, 1000);
+}
 async function refreshPendingPixNotice() {
   const notice = document.getElementById('pendingPixNotice');
   const version = ++pendingNoticeVersion;
@@ -404,7 +427,7 @@ async function refreshPendingPixNotice() {
   notice.replaceChildren();
   const summary = document.createElement('summary');
   summary.textContent = 'Compras recentes'; notice.append(summary);
-  notice.open = wasOpen || location.hash === '#pendingPixNotice';
+  notice.open = wasOpen || location.hash === '#pendingPixNotice' || states.some(({state})=>state.status==='PENDING');
   const labels = { ayla_monthly: '1 mês', ayla_quarterly: '3 meses', ayla_semester: '6 meses', ayla_whatsapp_unlock: 'Contato WhatsApp' };
   for (const { item, state } of states) {
     if (!AylaCheckouts.list().some(saved => saved.token === item.token)) continue;
@@ -412,28 +435,36 @@ async function refreshPendingPixNotice() {
     const paid = state.status === 'PAID';
     const showAll = location.hash === '#pendingPixNotice';
     const age = Date.now() - Number(item.createdAt || 0);
-    if (!showAll && ((!paid && (age >= 30 * 60 * 1000 || ['EXPIRED', 'CANCELED'].includes(state.status)))
-      || (item.noticeDismissedAt && (!paid || item.noticeDismissedPaid)))) continue;
+    if (!showAll && item.noticeDismissedAt && (!paid || item.noticeDismissedPaid)) continue;
     const row = document.createElement('div'); row.className = 'pending-pix-row';
     const text = document.createElement('span'), button = document.createElement('button'); button.type = 'button';
     if (notice.children.length === 1) { text.id = 'pendingPixText'; button.id = 'pendingPixContinue'; }
     let label = 'Compra em andamento';
     button.textContent = 'Retomar compra';
-    button.onclick = () => openCheckout(item.productId, item.token);
+    button.onclick = () => item.payment?.orderId ? location.assign('/continuar?order='+encodeURIComponent(item.payment.orderId)) : openCheckout(item.productId,item.token);
     if (state.status === 'PENDING') { label = 'Você tem um PIX pendente'; button.textContent = 'Continuar pagamento'; }
     else if (state.status === 'PAID' && state.accountFlow) {
       label = 'Pagamento confirmado'; button.textContent = 'Criar meu acesso';
       button.onclick = () => openPaidAccount(item, true);
     } else if (state.requiresReview) { label = 'Pedido em verificação'; button.textContent = 'Verificar pedido'; }
     else if (['EXPIRED','CANCELED'].includes(state.status)) { label = 'Prazo do PIX encerrado'; button.textContent = 'Conferir pedido'; }
-    text.textContent = label + ' · ' + labels[item.productId];
+    text.textContent = label + ' · ' + labels[item.productId] + (Number.isFinite(Number(state.amount))?' · '+Number(state.amount).toLocaleString('pt-BR',{style:'currency',currency:'BRL'}):'');if(state.status==='EXPIRED')window.FunnelAnalytics?.track('pix_expired',item.productId,item.payment?.orderId);if(state.status==='PENDING'&&item.payment?.orderId&&priorPending.has(item.payment.orderId)&&!pendingSeen.has(item.payment.orderId)){pendingSeen.add(item.payment.orderId);window.FunnelAnalytics?.track('pix_pending_return',item.productId,item.payment.orderId);}
     const dismiss = document.createElement('button'); dismiss.type = 'button'; dismiss.className = 'pending-pix-dismiss';
     dismiss.textContent = '×'; dismiss.setAttribute('aria-label', 'Dispensar aviso de ' + labels[item.productId]);
     dismiss.onclick = () => { AylaCheckouts.save({ ...item, noticeDismissedAt: Date.now(), noticeDismissedPaid: paid }); refreshPendingPixNotice(); };
-    row.append(text, button, dismiss); notice.append(row);
+    row.append(text);
+    if (state.status === 'PENDING') {
+      const countdown = document.createElement('small');
+      const expiry = state.expiresAt ? Date.parse(String(state.expiresAt).replace(' ', 'T') + 'Z') : NaN;
+      if (Number.isFinite(expiry)) countdown.dataset.pixExpires = String(expiry);
+      else countdown.textContent = 'Prazo não informado pela operadora';
+      row.append(countdown);
+    }
+    row.append(button, dismiss); notice.append(row);
   }
   notice.hidden = notice.children.length <= 1;
-  summary.textContent = 'Compras recentes (' + (notice.children.length - 1) + ')';
+  summary.textContent = notice.children.length===2 && states.some(({state})=>state.status==='PENDING')?'PIX pendente · Continuar pagamento':'Compras recentes (' + (notice.children.length - 1) + ')';
+  updatePendingNoticeCountdown();
 }
 function checkoutError(message, retry, reference = null) {
   const loading = document.getElementById('pixLoadingState');
@@ -448,6 +479,7 @@ function checkoutError(message, retry, reference = null) {
   }
 }
 async function openCheckout(productId, resumeToken = null) {
+  if(!resumeToken){window.FunnelAnalytics?.track('plan_selected',productId);if(productId.includes('monthly')||productId.includes('quarterly')||productId.includes('semester'))window.FunnelAnalytics?.track('subscription_cta_click',productId);window.FunnelAnalytics?.track('checkout_started',productId);}
   closeCheckout();
   const version = checkoutVersion;
   selectedProduct = PRODUCT_ALIASES[productId] || productId;
@@ -482,9 +514,7 @@ async function openCheckout(productId, resumeToken = null) {
           : 'Este PIX não está mais pendente. Se você pagou, aguarde a confirmação antes de fazer outro pagamento.', null, pending.payment.orderId);
         return;
       }
-      if (status.status === 'PENDING' && pending.payment.pix?.copyPaste && pending.payment.pix?.qrCode) {
-        showBuyerPix(pending.payment, version, pending.token); return;
-      }
+      if (status.status === 'PENDING') { const fresh=await fetch(API_BASE+'/api/orders/'+encodeURIComponent(pending.payment.orderId)+'/pix',{headers:{Authorization:'Bearer '+pending.token},signal:AbortSignal.timeout(10000)});if(fresh.ok){showBuyerPix(await fresh.json(),version,pending.token);return;} }
     }
     fetch(API_BASE+'/api/conversions/checkout',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({productId:selectedProduct,checkoutToken:currentCheckoutToken}),signal:AbortSignal.timeout(5000)}).catch(()=>{});
     await createCheckoutPix(version);
@@ -561,11 +591,12 @@ function showBuyerPix(data,version,token){
     const qr = document.getElementById('pixQrImage'); qr.src = data.pix.qrCode; qr.style.display = 'block';
     document.getElementById('pixLoadingState').style.display = 'none';
     document.getElementById('pixActiveArea').style.display = 'block';
-    const copy = document.getElementById('btnCopyPix'); copy.disabled = false; copy.textContent = 'COPIAR CÓDIGO PIX'; copy.classList.remove('copied');
+    const copy = document.getElementById('btnCopyPix'); copy.disabled = false; copy.textContent = 'COPIAR PIX'; copy.classList.remove('copied');
     document.getElementById('pixMockNotice').hidden = !data.mock;
     const stagingButton=document.getElementById('stagingConfirm');stagingButton.hidden=!data.staging;
     if(data.staging){const btn=stagingButton;btn.disabled=false;btn.textContent='SIMULAR PAGAMENTO — STAGING';btn.onclick=async()=>{btn.disabled=true;try{const r=await fetch('/api/staging/confirm',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({orderId:data.orderId,claimToken:token})});if(!r.ok)throw Error();}catch(_){btn.disabled=false;btn.textContent='Tentar simulação novamente';}};}
     document.getElementById('pixStatusMessage').textContent = 'Aguardando pagamento... não precisa atualizar';
+    startPixTimer(data.expiresAt,version,token);window.showPushOffer?.();window.FunnelAnalytics?.track('pix_qr_viewed',selectedProduct,data.orderId);
     startPaymentStatusPolling(data.orderId, version, token);
 }
 function startPaymentStatusPolling(orderId, version, token) {
@@ -588,7 +619,7 @@ function startPaymentStatusPolling(orderId, version, token) {
         // Keep the claim: a delayed valid webhook may still confirm this order.
         message.textContent = data.requiresReview ? 'Pedido em verificação. Não faça outro pagamento.' : 'PIX indisponível. Se você pagou, aguarde a confirmação.';
         document.getElementById('btnCopyPix').disabled = true;
-        currentPollingInterval = null; refreshPendingPixNotice(); return;
+        currentPollingInterval = null;if(data.status==='EXPIRED')window.FunnelAnalytics?.track('pix_expired',selectedProduct,orderId);showRegenerate(data.status==='EXPIRED'||data.status==='CANCELED',selectedProduct);refreshPendingPixNotice(); return;
       }
       message.textContent = 'Aguardando pagamento... não precisa atualizar';
     } catch (_) {
@@ -602,7 +633,7 @@ function startPaymentStatusPolling(orderId, version, token) {
 function closeCheckout() {
   checkoutVersion++; checkoutBusy = false;
   clearTimeout(currentCreationTimer); currentCreationTimer = null;
-  clearTimeout(currentPollingInterval); currentPollingInterval = null;
+  clearTimeout(currentPollingInterval); currentPollingInterval = null;clearInterval(pixTimer);pixTimer=null;
   closeModal('checkoutModalOverlay');
 }
 document.addEventListener('keydown', event => { if (event.key === 'Escape') closeCheckout(); });
@@ -792,17 +823,17 @@ document.getElementById('btnCopyPix')?.addEventListener('click', async () => {
   const input = document.getElementById('pixCodeInput');
   if (input && input.value) {
     try {
-      await navigator.clipboard.writeText(input.value);
+      await navigator.clipboard.writeText(input.value);window.FunnelAnalytics?.track('pix_copied',selectedProduct,currentOrderId);
     } catch (e) {
       input.select();
-      document.execCommand('copy');
+      if(document.execCommand('copy'))window.FunnelAnalytics?.track('pix_copied',selectedProduct,currentOrderId);
     }
     const btn = document.getElementById('btnCopyPix');
     if (btn) {
       btn.textContent = 'Copiado! ✓';
       btn.classList.add('copied');
       setTimeout(() => {
-        btn.textContent = 'COPIAR CÓDIGO PIX';
+        btn.textContent = 'COPIAR PIX';
         btn.classList.remove('copied');
       }, 2500);
     }

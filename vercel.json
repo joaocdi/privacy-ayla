@@ -7,10 +7,14 @@
   "functions": {
     "api/index.js": {
       "maxDuration": 30,
-      "includeFiles": "{*.html,*.js,*.css,avatar.jpg,cover.jpg,verified-ayla.png,favicon.ico,previews/*.jpg,backend/**}"
+      "includeFiles": "{*.html,*.js,*.css,analytics.js,push.js,push-sw.js,continue.js,continue.html,avatar.jpg,cover.jpg,verified-ayla.png,favicon.ico,previews/*.jpg,backend/**}"
     }
   },
   "rewrites": [
+    {
+      "source": "/continuar",
+      "destination": "/continue.html"
+    },
     {
       "source": "/vip",
       "destination": "/vip.html"

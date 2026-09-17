@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-creator="ayla">
 <head>
   <meta charset="UTF-8" />
   <style>html{background:#f4f3f1}</style>
@@ -380,7 +380,7 @@ document.getElementById('ageExit').addEventListener('click',function(){window.lo
       <div id="pixActiveArea" style="display:none;">
         <p id="pixMockNotice" class="checkout-note" hidden>Modo de demonstração · este PIX não é pagável.</p>
         <button type="button" id="stagingConfirm" class="btn-orange btn-pix" hidden>SIMULAR PAGAMENTO — STAGING</button>
-        <p class="pix-instruction">Pague com Pix</p>
+        <p class="pix-instruction">Pague com Pix</p><p id="pixExpiry" class="pix-expiry" aria-live="off"></p>
         <div class="pix-qr-container">
           <img id="pixQrImage" src="" alt="QR Code PIX" class="pix-qr-image" />
         </div>
@@ -389,17 +389,18 @@ document.getElementById('ageExit').addEventListener('click',function(){window.lo
           <label class="pix-copypaste-title">PIX copia e cola</label>
           <div class="pix-copypaste-input-wrap">
             <input type="text" id="pixCodeInput" class="pix-copypaste-field" readonly />
-            <button type="button" class="pix-btn-copy" id="btnCopyPix">COPIAR CÓDIGO PIX</button>
+            <button type="button" class="pix-btn-copy" id="btnCopyPix">COPIAR PIX</button>
           </div>
         </div>
 
-        <ol class="buyer-pix-steps"><li>Toque em “Copiar código Pix”.</li><li>Abra o aplicativo do seu banco.</li><li>Escolha Pix → Copia e Cola.</li><li>Cole o código e confirme o pagamento.</li></ol><p class="checkout-note">Não precisa atualizar esta página.</p>
+        <ol class="buyer-pix-steps"><li>Toque em “Copiar PIX”.</li><li>Abra o aplicativo do seu banco.</li><li>Escolha Pix → Copia e Cola.</li><li>Cole o código e confirme o pagamento.</li></ol><p class="checkout-note">Não precisa atualizar esta página.</p>
         <div class="pix-status-container" id="pixStatusContainer">
           <span class="pix-status-indicator"></span>
           <span class="pix-status-message" id="pixStatusMessage" role="status" aria-live="polite">Aguardando pagamento...</span>
         </div>
-
-
+        <button type="button" id="pixRegenerate" class="btn-orange" hidden>GERAR NOVO PIX</button>
+        <button type="button" id="pixSmallerPlan" hidden>Começar por 1 mês</button>
+        <div id="pushOffer" hidden><button type="button">Me avise quando confirmar</button><small></small></div>
       </div>
 
       <p class="checkout-note checkout-security">Acesso liberado após a confirmação do pagamento.<br>Seus dados ficam protegidos.</p>
@@ -425,6 +426,8 @@ document.getElementById('ageExit').addEventListener('click',function(){window.lo
  <button type="button" id="contactUnlockLater" class="contact-later">Agora não</button>
 </section></div>
 
+<script defer src="/analytics.js"></script>
+<script defer src="/push.js"></script>
 <script defer src="/pending-checkouts.js"></script>
 <script defer src="app.js?v=carousel-1"></script>
 <script defer src="/admin-loader.js?v=1"></script>
