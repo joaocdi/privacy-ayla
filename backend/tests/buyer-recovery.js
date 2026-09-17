@@ -1,0 +1,51 @@
+const assert=require('node:assert/strict');
+const crypto=require('crypto');
+async function contract(db){
+ const recovery=require('../services/buyer-recovery'),phone=require('../services/buyer-phone');
+ assert.equal(phone('(11) 99999-0000'),'5511999990000');assert.equal(phone('+55 11 99999-0000'),'5511999990000');assert.equal(phone('119999'),null);
+ await assert.rejects(recovery.request('11999990000','unavailable'),e=>e.status===503);
+ const suffix=crypto.randomBytes(6).toString('hex');
+ const token=crypto.randomBytes(32).toString('hex');
+ const order=await require('../services/orders').createOrder(require('../products').ayla_monthly,token,'mock',{phone:'5511999990000'});
+ await require('../services/orders').updateOrderPayment(order.public_id,await require('../payments/mock-provider').createPixPayment({orderId:order.public_id}));
+ let sent;const service=recovery.create({available:true,async send(value){sent=value;}});
+ let request=await service.request('11999990000','send-'+suffix);
+ const stored=await db.get('SELECT * FROM buyer_recovery WHERE id=?',request.challenge);
+ assert.ok(!JSON.stringify(stored).includes(sent.code));
+ await assert.rejects(service.verify(request.challenge,sent.code,'pending-'+suffix));
+ const before=Number((await db.get('SELECT COUNT(*) AS n FROM entitlements')).n);
+ await require('../services/entitlements').confirmPayment(order.public_id);
+ request=await service.request('11999990000','send-'+suffix);
+ const results=await Promise.allSettled([service.verify(request.challenge,sent.code,'verify-'+suffix),service.verify(request.challenge,sent.code,'verify-'+suffix)]);
+ assert.equal(results.filter(r=>r.status==='fulfilled').length,1,'OTP single use under concurrency');
+ const session=results.find(r=>r.status==='fulfilled').value;
+ assert.equal(session.orderId,order.public_id);assert.ok(await recovery.owns(order,session.token));
+ assert.ok(!await recovery.owns(order,crypto.randomBytes(32).toString('hex')));
+ assert.equal(Number((await db.get('SELECT COUNT(*) AS n FROM entitlements')).n),before+1,'recovery does not create entitlement');
+ const raw=await db.get('SELECT * FROM buyer_sessions WHERE order_id=?',order.id);assert.ok(!JSON.stringify(raw).includes(session.token));
+ request=await service.request('11999990000','send-'+suffix);const correct=sent.code;
+ const wrong=correct==='000000'?'000001':'000000';
+ for(let n=0;n<5;n++)await assert.rejects(service.verify(request.challenge,wrong,'attempts-'+suffix));
+ await assert.rejects(service.verify(request.challenge,correct,'attempts-'+suffix));
+ await assert.rejects(service.request('11999990000','send-'+suffix),e=>e.status===429);
+ await db.run('DELETE FROM buyer_recovery_limits');
+ request=await service.request('11999990000','expiry-'+suffix);await db.run('UPDATE buyer_recovery SET expires_at=0 WHERE id=?',request.challenge);
+ await assert.rejects(service.verify(request.challenge,sent.code,'expiry-'+suffix));
+ request=await service.request('21999990000','unknown-'+suffix);await assert.rejects(service.verify(request.challenge,sent.code,'unknown-'+suffix));
+ assert.equal(Number((await db.get('SELECT COUNT(*) AS n FROM entitlements')).n),before+1);
+ await db.run("UPDATE entitlements SET status='EXPIRED' WHERE order_id=?",order.id);
+ request=await service.request('11999990000','expired-'+suffix);await assert.rejects(service.verify(request.challenge,sent.code,'expired-'+suffix));
+ await db.run('DELETE FROM buyer_recovery_limits');
+ for(let n=0;n<10;n++)await service.request('119'+String(n).padStart(8,'0'),'ip-limit-'+suffix);
+ await assert.rejects(service.request('11900000010','ip-limit-'+suffix),e=>e.status===429);
+ const sessionCount=Number((await db.get('SELECT COUNT(*) AS n FROM buyer_sessions')).n);
+ for(let n=0;n<30;n++)await assert.rejects(service.verify('a'.repeat(48),'000000','verify-limit-'+suffix));
+ await assert.rejects(service.verify('a'.repeat(48),'000000','verify-limit-'+suffix),e=>e.status===429);
+ assert.equal(Number((await db.get('SELECT COUNT(*) AS n FROM buyer_sessions')).n),sessionCount);
+ console.log('PASS buyer recovery: phone, disabled delivery, hashed OTP/session, pending/unknown/expired denied, single-use concurrency, attempt/rate limits, no entitlement creation');
+}
+module.exports=contract;
+if(require.main===module){
+ require('./sqlite-env');process.env.DATABASE_PATH=require('path').resolve(__dirname,'../.test-runs/buyer-'+crypto.randomUUID()+'.sqlite');process.env.PAYMENT_PROVIDER='mock';process.env.VIP_MEDIA_SECRET=crypto.randomBytes(32).toString('hex');
+ const database=require('../db/database');database.initDb().then(contract).catch(e=>{console.error(e);process.exitCode=1}).finally(()=>database.closeDb());
+}

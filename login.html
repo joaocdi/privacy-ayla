@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#ffffff" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Ayla · Administração</title>
+  
+  
+  
+  <link rel="stylesheet" href="/login.css?v=auth-1" />
+<link rel="stylesheet" href="/fonts.css">
+<link rel="preload" as="font" type="font/woff2" href="/fonts/inter-400-3100e775e861.woff2" crossorigin>
+  <link rel="icon" href="/favicon.ico" sizes="any">
+</head>
+<body>
+
+<main class="login-frame">
+  <h1>Entrar</h1>
+  <p class="login-hint">Acesso da criadora. Visitantes não precisam entrar.</p>
+
+  <form id="loginForm" novalidate>
+    <label for="email">E-mail</label>
+    <input id="email" name="email" type="email" inputmode="email" autocomplete="username"
+           autocapitalize="none" autocorrect="off" spellcheck="false" required placeholder="voce@exemplo.com" />
+
+    <label for="password">Senha</label>
+    <div class="login-password">
+      <input id="password" name="password" type="password" autocomplete="current-password" required placeholder="Sua senha" />
+      <button type="button" id="toggle" aria-label="Mostrar senha" aria-pressed="false">Mostrar</button>
+    </div>
+
+    <p id="loginMessage" role="status" aria-live="polite"></p>
+    <button type="submit" id="submit" class="login-submit">Entrar</button>
+  </form>
+
+  <a class="login-back" href="/">Voltar para a página</a>
+</main>
+
+<script src="/login.js?v=auth-1"></script>
+</body>
+</html>

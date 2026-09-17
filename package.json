@@ -1,0 +1,12 @@
+{
+  "name": "privacy-ayla-deploy",
+  "private": true,
+  "version": "1.0.0",
+  "engines": { "node": "24.x" },
+  "scripts": {
+    "postinstall": "npm ci --prefix backend --omit=dev --omit=optional",
+    "test": "npm --prefix backend test",
+    "check": "npm --prefix backend run check",
+    "audit:security": "npm --prefix backend run audit:security"
+  }
+}

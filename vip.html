@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#ffffff" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>O clube da Ayla — Área VIP</title>
+  
+  
+  
+  <link rel="stylesheet" href="/vip.css?v=carousel-1" />
+<link rel="stylesheet" href="/frame.css?v=carousel-1">
+<script src="/frame.js?v=carousel-1" defer></script>
+<link rel="stylesheet" href="/carousel.css?v=carousel-1">
+<script src="/carousel.js?v=carousel-1" defer></script>
+<link rel="stylesheet" href="/fonts.css">
+<link rel="preload" as="font" type="font/woff2" href="/fonts/poppins-400-7d93459d8658.woff2" crossorigin>
+<link rel="stylesheet" href="/tips.css">
+<script src="/tips.js" defer></script>
+  <link rel="icon" href="/favicon.ico" sizes="any">
+</head>
+<body>
+
+<div class="vip-frame">
+
+  <header class="vip-topbar">
+    <span class="vip-topbar-label">SEU CANTINHO EXCLUSIVO</span>
+    <span class="vip-badge" id="vipBadge" hidden>Assinatura ativa</span>
+  </header>
+
+  <!-- Enquanto o servidor não respondeu -->
+  <section class="vip-state" id="vipLoading">
+    <div class="vip-spinner"></div>
+    <p>Carregando seu conteúdo...</p>
+  </section>
+
+  <!-- Sem assinatura válida, acesso expirado ou erro -->
+  <section class="vip-state" id="vipBlocked" hidden>
+    <div class="vip-lock" aria-hidden="true">
+      <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+           stroke-linecap="round" stroke-linejoin="round">
+        <rect x="5" y="11" width="14" height="10" rx="2.5" /><path d="M8 11V7a4 4 0 0 1 8 0v4" />
+      </svg>
+    </div>
+    <h1 id="vipBlockedTitle">Acesso negado.</h1>
+    <p id="vipBlockedText">Esta área é liberada assim que o seu pagamento é confirmado.</p>
+    <a class="vip-cta" id="vipBlockedButton" href="/">VOLTAR PARA A PÁGINA</a>
+    <p><a href="/?recover=1">Recuperar meu acesso pelo celular</a></p>
+  </section>
+
+  <!-- Conteúdo: montado pelo vip.js só quando o backend autoriza -->
+  <main id="vipContent" hidden>
+
+    <section class="vip-profile">
+      <div class="vip-cover"><img id="vipCover" alt="Capa do clube da Ayla" /><span>esse cantinho é nosso.</span></div>
+      <!-- Mesmos números do perfil público: vêm do mesmo objeto no backend. -->
+      <div class="vip-stats" id="vipStats" hidden>
+        <span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg><b id="vipStatPhotos"></b></span>
+        <span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg><b id="vipStatVideos"></b></span>
+        <span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#e44" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg><b id="vipStatLikes"></b></span>
+      </div>
+      <div class="vip-identity">
+        <span class="vip-avatar-wrap"><img class="vip-avatar" id="vipAvatar" alt="" /><span class="online-dot" aria-label="Online"></span></span>
+        <div class="vip-identity-text">
+          <h1 class="vip-name">
+            <span id="vipName"></span>
+            <img class="vip-verified verified-icon" id="vipVerified" src="/verified-ayla.png" width="15" height="15" alt="Verificado" />
+          </h1>
+          <p class="vip-username" id="vipUsername"></p>
+        </div>
+      </div>
+      <p class="vip-bio" id="vipBio"></p>
+      <p class="vip-expiry" id="vipExpiry"></p>
+      <!-- Contato: mimo (informativo) e chat (abre o WhatsApp da Ayla). -->
+      <div class="vip-profile-actions">
+<button type="button" class="vip-profile-action" id="vipChat">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 8.9 8.9 0 0 1-3.8-.8L3 20.5l1.4-4.1A8.4 8.4 0 0 1 3 11.5a8.4 8.4 0 0 1 9-8.4 8.4 8.4 0 0 1 9 8.4z"/></svg>
+          <span>WhatsApp</span>
+        </button>
+      </div>
+      <div class="vip-welcome"><span aria-hidden="true">♡</span><p>Que bom ter você aqui.<br><strong>Fique à vontade, o clube é seu também.</strong></p></div>
+    </section>
+
+    <!-- Mesma barra da página inicial: duas abas e a seleção em laranja. -->
+    <div class="vip-tabs" role="tablist" aria-label="Conteúdo">
+      <button type="button" class="vip-tab active" id="vipTabPosts" role="tab" aria-selected="true">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+        <span id="vipTabPostsLabel">Postagens</span>
+      </button>
+      <button type="button" class="vip-tab" id="vipTabMedia" role="tab" aria-selected="false">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        <span id="vipTabMediaLabel">Mídias</span>
+      </button>
+    </div>
+    <section class="vip-feed" id="vipFeed" aria-label="Publicações da Ayla"></section>
+    <p class="vip-empty" id="vipEmpty" hidden>Ainda não há publicações nesta seleção.</p>
+
+    <footer class="vip-footer">
+      <p>Conteúdo exclusivo para assinantes. Não compartilhe.</p>
+    </footer>
+  </main>
+</div>
+
+<script defer src="/vip.js?v=carousel-1"></script>
+<script defer src="/admin-loader.js?v=1"></script>
+</body>
+</html>

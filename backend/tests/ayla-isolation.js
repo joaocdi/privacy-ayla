@@ -1,0 +1,24 @@
+require('./sqlite-env');
+const assert=require('node:assert/strict'),crypto=require('node:crypto'),path=require('node:path');
+process.env.DATABASE_PATH=path.resolve(__dirname,'../.test-runs/ayla-isolation-'+crypto.randomUUID()+'.sqlite');
+const creator=require('../creator'),db=require('../db/database'),orders=require('../services/orders'),grants=require('../services/entitlements');
+(async()=>{
+ await db.initDb();
+ for(const id of ['monthly','other_monthly','whatsapp_unlock']) await assert.rejects(orders.createOrder({id,price:9.9},crypto.randomBytes(32).toString('hex'),'mock'),/outra criadora/);
+ const token=crypto.randomBytes(32).toString('hex');
+ const order=await orders.createOrder(require('../products').ayla_monthly,token,'mock');
+ await orders.updateOrderPayment(order.public_id,await require('../payments/mock-provider').createPixPayment({orderId:order.public_id}));
+ const d=await db.getDb();await d.run("UPDATE orders SET product_id='other_monthly' WHERE id=?",order.id);
+ await assert.rejects(grants.confirmPayment(order.public_id),/outra criadora/);
+ assert.equal((await d.get('SELECT status FROM orders WHERE id=?',order.id)).status,'PENDING');
+ assert.equal((await d.get('SELECT COUNT(*) AS n FROM entitlements')).n,0);
+ assert.equal(await orders.getOrderByPublicId(order.public_id),undefined);
+ assert.equal(await grants.activeSubscription({...order,status:'PAID',product_id:'other_monthly'}),null);
+ process.env.VIP_MEDIA_DRIVER='supabase';const media=require('../services/vip-media');
+ assert.equal(media.safeObjectPath('other/posts/secret.jpg'),null);assert.equal(media.safeObjectPath('ayla/posts/example.jpg'),'ayla/posts/example.jpg');
+ process.env.NODE_ENV='production';process.env.DATABASE_SCHEMA='public';assert.throws(()=>creator.databaseSchema(),/dedicated/);
+ process.env.DATABASE_SCHEMA='ayla';assert.equal(creator.databaseSchema(),'ayla');
+ process.env.APP_ENV='staging';process.env.STAGING_DATABASE_SCHEMA='staging_other';assert.throws(()=>creator.databaseSchema(),/dedicated/);
+ process.env.STAGING_DATABASE_SCHEMA='staging_ayla_preview';assert.equal(creator.databaseSchema(),'staging_ayla_preview');
+ console.log('PASS Ayla isolation: foreign products/orders cannot grant access; foreign Storage path and public/foreign schema rejected');
+})().catch(e=>{console.error(e);process.exitCode=1}).finally(()=>db.closeDb());

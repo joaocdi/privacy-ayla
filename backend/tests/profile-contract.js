@@ -1,0 +1,24 @@
+const assert = require('node:assert/strict');
+module.exports = async function testProfile(db) {
+  const profile = require('../services/profile');
+  const initial = await profile.get();
+  assert.equal(initial.name, 'Ayla');
+  assert.equal(initial.bio, require('../vip-content').profile.bio);
+  const body = { ...initial, name: 'Ayla QA', bio: '<script>texto como texto</script>' };
+  const saved = await profile.save(body, 'profile-session');
+  assert.equal(saved.version, 1);
+  assert.equal((await profile.get()).bio, body.bio);
+  await assert.rejects(profile.save(body, 'profile-session'), { status: 409 });
+  await assert.rejects(profile.save({ ...saved, username: 'invalid space' }, 'profile-session'), { status: 400 });
+  await assert.rejects(profile.save({ ...saved, avatarUploadId: 'missing' }, 'profile-session'), { status: 400 });
+  await db.run("INSERT INTO vip_uploads(id,session_id,media_path,mime_type,type,size_bytes,complete,expires_at) VALUES ('profile-image','profile-session','ayla/profile-test.png','image/png','image',100,1,?)", Date.now()+100000);
+  await assert.rejects(profile.save({ ...saved, avatarUploadId: 'profile-image' }, 'other-session'), { status: 400 });
+  const withImage = await profile.save({ ...saved, avatarUploadId: 'profile-image', coverUploadId: 'profile-image' }, 'profile-session');
+  assert.ok(!JSON.stringify(withImage).includes('ayla/profile-test.png'));
+  assert.equal((await profile.image('avatar')).path, 'ayla/profile-test.png');
+  assert.equal((await profile.image('cover')).path, 'ayla/profile-test.png');
+  await assert.rejects(profile.image('post'), { status: 404 });
+  await db.run("UPDATE vip_uploads SET type='video' WHERE id='profile-image'");
+  await assert.rejects(profile.save({ ...withImage, coverUploadId: 'profile-image' }, 'profile-session'), { status: 400 });
+  console.log('PASS: shared profile defaults, persistence, upload ownership, images only, optimistic locking and private path protection');
+};

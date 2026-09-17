@@ -1,0 +1,39 @@
+{
+  "name": "privacy-backend",
+  "version": "1.0.0",
+  "description": "Backend de pagamentos PIX e liberacao de acesso",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "test": "node tests/run.js",
+    "check": "node tests/check.js",
+    "test:pg": "node tests/postgres.js",
+    "audit:security": "node tests/security-audit.js"
+  },
+  "keywords": [
+    "pix",
+    "payments"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "pg": "^8.23.0",
+    "qrcode": "^1.5.4"
+  },
+  "overrides": {
+    "qs": "^6.16.0"
+  },
+  "optionalDependencies": {
+    "node-telegram-bot-api": "^2.1.0",
+    "sqlite": "^5.1.1",
+    "sqlite3": "^6.0.1"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "^0.5.8",
+    "@ffmpeg-installer/ffmpeg": "^1.1.0"
+  }
+}

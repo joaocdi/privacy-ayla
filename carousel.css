@@ -1,0 +1,93 @@
+/* ==========================================================================
+   CARROSSEL — só o necessário para deslizar.
+
+   Nada aqui muda o visual do cartão: a moldura, o fundo, o raio e o
+   espaçamento continuam vindo do CSS da página. Este arquivo cuida do trilho,
+   do encaixe do swipe, das setas e do indicador.
+
+   Publicação de uma mídia usa `.car-single` e fica IDÊNTICA ao que era antes:
+   sem trilho visível, sem seta, sem ponto, sem contador.
+   ========================================================================== */
+
+.car { position: relative; }
+
+.car-track {
+  display: flex;
+  width: 100%; height: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  /* O swipe é o scroll do próprio navegador: inércia e encaixe de verdade. */
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+}
+.car-track::-webkit-scrollbar { display: none; }
+
+.car-cell {
+  position: relative;
+  flex: 0 0 100%;
+  width: 100%; height: 100%;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  overflow: hidden;
+}
+.car-cell > img, .car-cell > video { display: block; width: 100%; height: 100%; object-fit: cover; }
+
+/* Uma mídia só: o trilho existe, mas nada dele aparece. */
+.car-single .car-track { overflow: visible; scroll-snap-type: none; }
+
+/* ------------------------------------------------------------------ setas */
+/* Escondidas no toque: lá quem manda é o dedo. Aparecem onde há ponteiro. */
+.car-controls { display: none; }
+.car-arrow {
+  position: absolute; z-index: 4; top: 50%;
+  transform: translateY(-50%);
+  width: 40px; height: 40px; padding: 0;
+  display: flex; align-items: center; justify-content: center;
+  border: 1px solid #ffffff4d; border-radius: 50%;
+  background: #00000066; color: #fff;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+  transition: opacity .15s ease;
+}
+.car-arrow svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.car-arrow-prev { left: 8px; }
+.car-arrow-next { right: 8px; }
+.car-arrow:disabled { opacity: 0; pointer-events: none; }
+@media (hover: hover) and (pointer: fine) {
+  .car-many .car-controls { display: block; }
+}
+
+/* -------------------------------------------------------------- indicador */
+.car-count {
+  position: absolute; z-index: 4;
+  top: 10px; right: 10px;
+  padding: 3px 9px;
+  border-radius: 12px;
+  background: #00000073;
+  color: #fff;
+  font: 600 11.5px/1.5 Poppins, Inter, Arial, sans-serif;
+  letter-spacing: .02em;
+  pointer-events: none;
+}
+.car-dots {
+  position: absolute; z-index: 4;
+  left: 0; right: 0; bottom: 8px;
+  display: flex; justify-content: center; gap: 5px;
+  pointer-events: none;
+}
+.car-dot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: #ffffff66;
+  transition: background .15s ease, transform .15s ease;
+}
+.car-dot.is-on { background: #fff; transform: scale(1.35); }
+
+.car-single .car-count, .car-single .car-dots, .car-single .car-controls { display: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .car-track { scroll-behavior: auto; }
+  .car-dot, .car-arrow { transition: none; }
+}

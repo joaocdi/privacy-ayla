@@ -1,0 +1,32 @@
+# Nada de conteúdo privado, banco local ou arquivo de trabalho no deploy.
+# O .gitignore já barra a maior parte; isto é a segunda tranca, para o caso de
+# um `vercel deploy` a partir da pasta local em vez do Git.
+Area_membro/
+Midias_Bloqueadas/
+Privacy_Sites.zip
+backend/.test-runs/
+backend/tests/
+backend/scripts/
+*.sqlite
+*.sqlite-*
+.env
+.env.*
+backend.env
+_snapshots/
+!.env.example
+
+# Fontes de referência capturadas do site original: não fazem parte do produto.
+clone.html
+site_source.html
+routes_bundle.js
+*.bak
+
+# Atalho local de publicacao
+publicar.bat
+*.bat
+
+.audit/
+midias-ayla/
+Media_Ayla/
+**/.env
+**/.env.*

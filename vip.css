@@ -1,0 +1,771 @@
+/* ==========================================================================
+   ÁREA VIP — feed de entrega.
+   Mesma linguagem visual da página de venda (Poppins, laranja #f97316, cartões
+   claros), em arquivo separado para não encostar no style.css já aprovado.
+   Mobile first: 100% da largura no celular, coluna estreita centralizada no
+   desktop. Sem painel lateral, sem dashboard.
+   ========================================================================== */
+
+:root {
+  --vip-bg: #f2f2f2;
+  --vip-card: #ffffff;
+  --vip-ink: #111111;
+  --vip-muted: #666666;
+  --vip-line: #ebebeb;
+  --vip-accent: #f97316;
+  --vip-ok: #16a34a;
+}
+
+* { box-sizing: border-box; }
+
+/* `hidden` precisa vencer os `display` declarados abaixo — sem isto, as telas
+   de carregando e de acesso negado ficam visíveis junto com o feed. */
+[hidden] { display: none !important; }
+
+body {
+  margin: 0;
+  background: var(--vip-bg);
+  color: var(--vip-ink);
+  font-family: 'Poppins', Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.vip-frame {
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  background: var(--vip-card);
+  min-height: 100vh;
+}
+
+@media (min-width: 520px) {
+  .vip-frame {
+    min-height: auto;
+    margin: 24px auto;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, .05), 0 18px 40px -24px rgba(0, 0, 0, .35);
+  }
+}
+
+/* ------------------------------------------------------------- topo */
+
+.vip-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 13px 16px;
+  background: var(--vip-card);
+  border-bottom: 1px solid var(--vip-line);
+}
+
+.vip-logo { font-size: 19px; font-weight: 800; letter-spacing: -.5px; }
+.vip-logo span { color: var(--vip-accent); }
+
+.vip-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--vip-ok);
+  background: #f1faf4;
+  border: 1px solid #cdebd8;
+  border-radius: 999px;
+  padding: 4px 10px;
+  white-space: nowrap;
+}
+
+.vip-badge::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--vip-ok);
+}
+
+/* --------------------------------------------- estados (carregando/bloqueado) */
+
+.vip-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+  padding: 64px 26px;
+}
+
+.vip-state h1 { margin: 0; font-size: 19px; letter-spacing: -.2px; }
+.vip-state p { margin: 0; max-width: 300px; font-size: 13.5px; line-height: 1.55; color: var(--vip-muted); }
+
+.vip-lock {
+  width: 74px;
+  height: 74px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #f6f6f6;
+  color: #9a9a9a;
+}
+
+.vip-spinner {
+  width: 26px;
+  height: 26px;
+  border: 3px solid #eee;
+  border-top-color: var(--vip-accent);
+  border-radius: 50%;
+  animation: vip-spin .8s linear infinite;
+}
+
+@keyframes vip-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .vip-spinner { animation-duration: 2.4s; } }
+
+.vip-cta {
+  display: inline-block;
+  margin-top: 6px;
+  padding: 12px 22px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--vip-accent);
+  color: #fff;
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 800;
+  letter-spacing: .02em;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+/* ------------------------------------------------------------ perfil */
+
+.vip-cover { height: 132px; background: #ddd; }
+.vip-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+.vip-profile { border-bottom: 1px solid var(--vip-line); padding-bottom: 14px; }
+
+.vip-identity {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  padding: 0 16px;
+  margin-top: -34px;
+}
+
+.vip-avatar {
+  width: 78px;
+  height: 78px;
+  border-radius: 50%;
+  border: 3px solid #fff;
+  object-fit: cover;
+  background: #ccc;
+  flex: 0 0 auto;
+}
+
+.vip-identity-text { padding-bottom: 4px; min-width: 0; }
+
+.vip-name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -.3px;
+}
+
+.vip-verified { flex: 0 0 auto; }
+.vip-username { margin: 2px 0 0; font-size: 13px; color: var(--vip-muted); }
+.vip-bio { margin: 10px 16px 0; font-size: 13.5px; line-height: 1.5; }
+.vip-expiry { margin: 8px 16px 0; font-size: 12px; color: var(--vip-muted); }
+
+/* -------------------------------------------------------------- feed */
+
+.vip-feed { display: flex; flex-direction: column; }
+
+.vip-post { border-bottom: 8px solid var(--vip-bg); }
+
+.vip-post-head { display: flex; align-items: center; gap: 10px; padding: 12px 16px; }
+.vip-post-head img { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; }
+.vip-post-head b { display: flex; align-items: center; gap: 5px; font-size: 13.5px; }
+.vip-post-head small { display: block; color: var(--vip-muted); font-size: 11.5px; font-weight: 500; }
+
+/* Só aparece na revisão da criadora, para separar rascunho de publicado. */
+.vip-draft-tag {
+  margin-left: auto;
+  flex: none;
+  padding: 4px 9px;
+  border-radius: 999px;
+  background: #fff1e3;
+  color: #a8590c;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+.vip-caption { margin: 0; padding: 0 16px 10px; font-size: 13.5px; line-height: 1.45; }
+
+.vip-media {
+  position: relative;
+  background: #111;
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+}
+
+.vip-video-play {
+  position: absolute; top: 12px; left: 12px; z-index: 3;
+  display: grid; place-items: center; width: 48px; height: 48px;
+  padding: 0 0 0 3px; border: 1px solid #ffffff99; border-radius: 50%;
+  background: #0009; color: #fff; font-size: 22px; cursor: pointer;
+  box-shadow: 0 2px 8px #0003;
+}
+.vip-video-play:focus-visible { outline: 3px solid #ff963f; outline-offset: 3px; }
+
+.vip-media img,
+.vip-media video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.vip-actions {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 11px 16px;
+  color: var(--vip-muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.vip-action { display: inline-flex; align-items: center; gap: 6px; }
+.vip-action svg { flex: 0 0 auto; }
+.vip-action-save { margin-left: auto; }
+
+/* --------------------------------------------------- bloco de chamada */
+
+.vip-promo {
+  margin: 0;
+  padding: 22px 18px;
+  text-align: center;
+  background: linear-gradient(180deg, #fff7ef, #ffffff);
+  border-bottom: 8px solid var(--vip-bg);
+}
+
+.vip-promo h2 { margin: 0 0 6px; font-size: 15.5px; letter-spacing: -.2px; }
+.vip-promo p { margin: 0 0 14px; font-size: 13px; line-height: 1.5; color: var(--vip-muted); }
+
+/* ------------------------------------------------------------ rodapé */
+
+.vip-footer { padding: 22px 16px 30px; text-align: center; }
+.vip-footer p { margin: 0; font-size: 11.5px; color: #9a9a9a; }
+
+/* ------------------------------------------------------------- modal */
+
+.vip-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(0, 0, 0, .55);
+}
+
+.vip-modal-overlay[hidden] { display: none; }
+
+.vip-modal {
+  width: 100%;
+  max-width: 340px;
+  background: var(--vip-card);
+  border-radius: 14px;
+  padding: 22px 20px;
+  text-align: center;
+}
+
+.vip-modal h2 { margin: 0 0 8px; font-size: 17px; }
+.vip-modal p { margin: 0 0 16px; font-size: 13.5px; line-height: 1.5; color: var(--vip-muted); }
+
+:focus-visible { outline: 2px solid var(--vip-accent); outline-offset: 2px; }
+
+/* Shared feed components. Final social theme follows below. */
+:root {
+  --vip-bg: #faf7f2;
+  --vip-card: #fffdf9;
+  --vip-ink: #342923;
+  --vip-muted: #8b786a;
+  --vip-line: #e8ddd1;
+  --vip-accent: #ad4f40;
+  --vip-ok: #5c7b5c;
+}
+body { background: #eee8e1; }
+button, a { -webkit-tap-highlight-color: transparent; }
+.vip-frame { max-width: 520px; background: var(--vip-bg); min-height: 100vh; margin: 0 auto; border-radius: 0; box-shadow: 0 0 80px #5c413316; overflow: visible; }
+.vip-topbar { position: relative; padding: 0 24px; height: 72px; background: var(--vip-bg); border: 0; gap: 10px; }
+.vip-logo { font: italic 36px Georgia,serif; letter-spacing: -2px; color: var(--vip-ink); text-decoration: none; }
+.vip-topbar-label { font-size: 7px; font-weight: 600; letter-spacing: 1.3px; color: #9e8978; }
+.vip-badge { color: var(--vip-ok); font-size: 8px; font-weight: 500; border-color: #d7dfca; background: #eef1e5; padding: 6px 8px; }
+.vip-badge::before { width: 4px; height: 4px; }
+.vip-profile { padding-bottom: 0; border: 0; }
+.vip-cover { height: 190px; margin: 0 16px; border-radius: 18px; overflow: hidden; position: relative; background: #dac8b8; }
+.vip-cover::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg,transparent,#392b1b38); }
+.vip-cover img { object-position: center 47%; }
+.vip-cover > span { position: absolute; right: 20px; bottom: 21px; font: italic 23px Georgia,serif; color: #fff7e9; z-index: 1; text-shadow: 0 2px 8px #58422b55; }
+.vip-identity { padding: 0 26px; margin-top: -31px; position: relative; z-index: 2; gap: 14px; align-items: flex-end; }
+.vip-avatar { width: 80px; height: 80px; border: 4px solid var(--vip-bg); }
+.vip-name { font-size: 23px; font-weight: 600; letter-spacing: -.6px; }
+.vip-identity-text { padding-bottom: 1px; }
+.vip-username { color: #a18b7b; font-size: 10px; margin-top: 5px; }
+.vip-verified { width: 17px; height: 17px; }
+.vip-bio { font: 17px Georgia,serif; margin: 21px 26px 0; color: #78604e; }
+.vip-expiry { color: #786454; font-size: 11px; margin: 9px 26px 0; }
+.vip-welcome { display: flex; align-items: center; gap: 13px; margin: 24px 16px 29px; padding: 17px 20px; background: #f2e8dc; border: 1px solid #e9dccc; border-radius: 12px; }
+.vip-welcome > span { font: 32px Georgia,serif; color: #b38164; }
+.vip-welcome p { font: 18px/1.45 Georgia,serif; margin: 0; color: #745542; }
+.vip-welcome strong { font: 10px Poppins,sans-serif; font-weight: 400; color: #a08069; }
+.vip-eyebrow { display: block; color: #ae8164; font-size: 7px; letter-spacing: 1.5px; line-height: 1.6; font-weight: 600; }
+.vip-feed-heading { padding: 0 25px 17px; display: flex; align-items: flex-end; justify-content: space-between; gap: 10px; }
+.vip-feed-heading h2 { margin: 5px 0 0; font: 27px/1.2 Georgia,serif; letter-spacing: -.8px; }
+#vipPostCount { color: #b09a88; font-size: 8px; white-space: nowrap; padding-bottom: 4px; }
+.vip-filters { display: flex; gap: 7px; margin: 0 16px 20px; padding: 0 7px 14px; border-bottom: 1px solid var(--vip-line); }
+.vip-filters button { padding: 9px 20px; border: 1px solid transparent; border-radius: 30px; background: transparent; color: #a28b78; font: 11px Poppins,sans-serif; cursor: pointer; }
+.vip-filters button.active { border-color: #e9d2be; background: #f2e5d7; color: #946044; }
+.vip-filters button:hover { color: var(--vip-accent); }
+.vip-feed { padding: 0 16px; gap: 18px; }
+.vip-post { border: 1px solid var(--vip-line); border-radius: 16px; overflow: hidden; background: var(--vip-card); box-shadow: 0 3px 12px #65462b04; }
+.vip-post-head { padding: 16px; gap: 9px; }
+.vip-post-head img { width: 34px; height: 34px; border: 1px solid #eadbca; }
+.vip-post-head b { font-size: 11px; font-weight: 600; color: #64503f; }
+.vip-post-head small { font-size: 9px; color: #ac9480; margin-top: 3px; }
+.vip-post-type { margin-left: auto; font-size: 7px; letter-spacing: 1.1px; color: #a88f7a; }
+.vip-media { background: #e3d6c8; aspect-ratio: auto; }
+.vip-media img { aspect-ratio: 4/5; object-fit: cover; }
+.vip-media video { max-height: 650px; aspect-ratio: 4/5; object-fit: contain; background: #302a25; }
+.vip-caption { padding: 0 16px; font-size: 12px; line-height: 1.8; color: #947b66; margin-top: 1px; }
+.vip-caption strong { font-weight: 600; color: #715542; margin-right: 3px; }
+.vip-post-context { margin: 10px 16px 19px; font-size: 7px; letter-spacing: 1px; color: #b09b86; }
+.vip-actions { justify-content: space-between; align-items: center; padding: 9px 11px 6px; gap: 10px; }
+.vip-action { appearance: none; border: 0; background: transparent; color: #98765c; cursor: pointer; padding: 9px 5px; font: 11px Poppins,sans-serif; transition: color .18s, transform .18s; min-height: 40px; }
+.vip-action svg { width: 20px; height: 20px; stroke-width: 1.5; }
+.vip-like { gap: 7px; }
+.vip-like.is-liked { color: #b9544c; }
+.vip-like.is-liked svg { fill: #b9544c; stroke: #b9544c; animation: heart-pop .25s ease-out; }
+.vip-like:hover { color: #b9544c; }
+.vip-gift { border: 1px solid #ecdccb; border-radius: 30px; background: #fcf6ed; padding: 8px 12px; font-size: 10px; min-height: 34px; gap: 7px; }
+.vip-gift svg { width: 15px; height: 15px; }
+.vip-gift:hover { background: #f3e5d5; }
+@keyframes heart-pop { 50% { transform: scale(1.22); } }
+.vip-promo { position: relative; padding: 25px; margin: 3px 0; border: 1px solid #e1ceb9; border-radius: 15px; background: #eee0ce; text-align: left; overflow: hidden; }
+.vip-promo::after { content: '♡'; position: absolute; right: 20px; top: 12px; font: 77px Georgia,serif; color: #c39c7355; pointer-events: none; }
+.vip-promo h2 { font: 25px Georgia,serif; color: #765139; letter-spacing: -.7px; margin: 9px 0; position: relative; z-index: 1; }
+.vip-promo p { color: #9b7c5f; font-size: 11px; line-height: 1.8; max-width: 280px; margin-bottom: 15px; }
+.vip-cta { color: #fff8ef; background: var(--vip-accent); border-radius: 8px; padding: 13px 19px; font-size: 11px; font-weight: 500; letter-spacing: 0; transition: background .2s; }
+.vip-cta:hover { background: #873c32; }
+.vip-promo .vip-cta { background: #fff8ed; color: #926546; font-size: 10px; padding: 11px 15px; margin-top: 0; }
+.vip-empty { padding: 40px 25px; text-align: center; color: var(--vip-muted); font-size: 13px; }
+.vip-footer { padding: 35px 20px 42px; }
+.vip-footer .vip-logo { color: #a88f7b; font-size: 32px; }
+.vip-footer p { font-size: 9px; line-height: 1.9; color: #b09b88; margin-top: 10px; }
+.vip-state { padding: 80px 28px; min-height: 65vh; justify-content: center; gap: 18px; }
+.vip-state h1 { font: 31px Georgia,serif; color: #72523c; }
+.vip-state p { font-size: 12px; line-height: 1.9; color: #a08976; }
+.vip-lock { border-radius: 24px; background: #f0e4d5; color: #b3916f; border: 1px solid #e6d7c4; }
+.vip-lock svg { width: 30px; height: 30px; }
+.vip-state .vip-cta { margin-top: 12px; }
+.vip-spinner { border-color: #eadcc9; border-top-color: var(--vip-accent); }
+.vip-modal-overlay { background: #281d185e; backdrop-filter: blur(5px); padding: 20px; }
+.vip-modal { border-radius: 22px; border: 1px solid #f3e5d2; padding: 30px 26px; max-width: 355px; max-height: calc(100dvh - 40px); overflow-y: auto; box-shadow: 0 20px 90px #251b1730; }
+.vip-modal-symbol { display: grid; place-items: center; width: 64px; height: 64px; border: 1px solid #e6d0b5; border-radius: 50%; font: 40px Georgia,serif; background: #f7eee2; color: #bb9270; margin: 0 auto 22px; }
+.vip-modal h2 { font: 29px Georgia,serif; letter-spacing: -.9px; color: #76513a; margin: 9px 0 14px; }
+.vip-modal p { font-size: 12px; line-height: 1.8; color: #9b7f67; }
+.vip-modal .vip-modal-note { font-size: 11px; color: #786454; margin-top: -3px; }
+.vip-modal .vip-cta { display: block; width: 100%; margin-top: 20px; }
+@media (max-width: 359px) {
+  .vip-topbar { padding: 0 17px; }.vip-topbar-label { display: none; }
+  .vip-identity { padding: 0 22px; }.vip-cover > span { font-size: 19px; }
+  .vip-feed-heading h2 { font-size: 24px; }.vip-welcome { padding: 15px; }
+  .vip-welcome p { font-size: 16px; }.vip-welcome strong { font-size: 9px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+
+/* Match the compact white/orange social interface of the home. */
+:root { --vip-bg: #fff; --vip-card: #fff; --vip-ink: #222; --vip-muted: #737373; --vip-line: #ededed; --vip-accent: #f97316; }
+body { background: #f7f7f7; }
+.vip-frame { max-width: 430px; box-shadow: none; border-inline: 1px solid #eee; }
+.vip-topbar { height: 48px; padding: 0 14px; border-bottom: 1px solid #eee; }
+.vip-logo, .vip-footer .vip-logo { font: 700 20px Poppins,Arial,sans-serif; letter-spacing: -.6px; color: #222; }
+.vip-logo span { color: #f97316; }
+.vip-topbar-label, .vip-cover > span, .vip-welcome, .vip-feed-heading .vip-eyebrow { display: none; }
+.vip-badge { font-size: 9px; }
+.vip-cover { height: 166px; margin: 8px 10px 0; border-radius: 9px 9px 0 0; }
+.vip-cover::after { display: none; }
+.vip-identity { padding: 0 14px; margin-top: -30px; gap: 10px; }
+.vip-avatar { width: 76px; height: 76px; border-width: 3px; }
+.vip-name { font-size: 20px; letter-spacing: -.4px; }
+.vip-username { color: #888; font-size: 11px; }
+.vip-bio { font: 13px/1.6 Poppins,Arial,sans-serif; color: #666; margin: 12px 14px 0; }
+.vip-expiry { color: #737373; margin: 6px 14px 16px; }
+.vip-feed-heading { padding: 8px 14px; }
+.vip-feed-heading h2 { font: 600 14px Poppins,Arial,sans-serif; letter-spacing: 0; }
+#vipPostCount { font-size: 10px; color: #888; }
+.vip-filters { margin: 0 0 8px; padding: 0; gap: 0; }
+.vip-filters button { flex: 1; border: 0; border-bottom: 2px solid transparent; border-radius: 0; color: #777; padding: 13px 8px; font-size: 12px; }
+.vip-filters button.active { background: #fff; border-bottom-color: #f97316; color: #d35a08; }
+.vip-feed { padding: 0 8px; gap: 10px; }
+.vip-post { border-radius: 8px; box-shadow: none; }
+.vip-post-head { padding: 10px; }
+.vip-post-head b { color: #333; font-size: 12px; }
+.vip-post-head small, .vip-post-type { color: #888; }
+.vip-media { background: #f5f5f5; }
+.vip-media video { background: #222; }
+.vip-caption { padding: 10px 10px 2px; color: #666; line-height: 1.6; white-space: pre-wrap; overflow-wrap: anywhere; }
+.vip-caption strong { color: #333; }
+.vip-post-context { margin: 8px 10px 12px; color: #888; }
+.vip-actions { padding: 5px 10px; }
+.vip-action { color: #666; }
+.vip-gift { border-color: #e7e7e7; background: #fafafa; color: #666; }
+.vip-gift:hover { background: #fff2e7; }
+.vip-promo { border-color: #f0e6dc; background: #fffaf5; padding: 18px; border-radius: 8px; margin: 0; }
+.vip-promo::after { display: none; }
+.vip-promo h2 { font: 600 18px Poppins,Arial,sans-serif; color: #333; letter-spacing: -.2px; }
+.vip-promo p { color: #666; }
+.vip-eyebrow { color: #777; letter-spacing: .6px; font-size: 9px; }
+.vip-cta, .vip-promo .vip-cta { background: linear-gradient(100deg,#ff963e,#ff7715); color: #222; border-radius: 24px; }
+.vip-cta:hover { background: #ff9d53; }
+.vip-footer { padding: 24px 14px; }
+.vip-footer p { color: #888; }
+.vip-state h1 { font: 600 25px Poppins,Arial,sans-serif; color: #333; }
+.vip-state p { color: #666; }
+.vip-lock { color: #f97316; background: #fff7ee; border-color: #f0e6dc; }
+.vip-modal-overlay { background: #0006; }
+.vip-modal { border-color: #eee; border-radius: 16px; box-shadow: 0 10px 35px #0002; }
+.vip-modal h2 { font: 600 23px Poppins,Arial,sans-serif; color: #333; letter-spacing: -.3px; }
+.vip-modal p, .vip-modal .vip-modal-note { color: #666; }
+.vip-modal-symbol { background: #fff7ee; color: #f97316; border-color: #ffe0c2; }
+
+/* ==========================================================================
+   ACABAMENTO FINAL — /VIP
+   O VIP é a mesma plataforma da HOME, depois da assinatura: mesma coluna,
+   mesma tipografia, mesmos cinzas, mesmo raio de borda e mesmo respiro entre
+   publicações. Feed social compacto — nada de painel, nada de blog.
+   ========================================================================== */
+
+:root {
+  --vip-radius-card: 15px;
+  --vip-radius-pill: 26px;
+  --vip-gutter: 10px;
+  --vip-gap: 12px;
+}
+
+.vip-feed { padding: 0 var(--vip-gutter); gap: var(--vip-gap); }
+.vip-post {
+  border: 1px solid #ececec;
+  border-radius: var(--vip-radius-card);
+  background: #fff;
+  box-shadow: none;
+  overflow: hidden;
+}
+.vip-post:last-of-type { margin-bottom: 4px; }
+
+/* cabeçalho pequeno: avatar, nome, verificado, @ e o tipo da mídia */
+.vip-post-head { padding: 11px 12px 9px; gap: 9px; }
+.vip-post-head img { width: 32px; height: 32px; border: 0; }
+.vip-post-head b { font-size: 12.5px; font-weight: 600; color: #222; gap: 4px; }
+.vip-post-head small { font-size: 11px; color: #8c8c8c; margin-top: 1px; }
+.vip-post-head b img.verified-icon { width: 14px; height: 14px; }
+.vip-post-type { font-size: 8px; letter-spacing: 1.1px; color: #9a9a9a; }
+
+/* mídia grande, dentro do raio do cartão */
+.vip-media { background: #f3f3f3; }
+.vip-media img { aspect-ratio: 4/5; object-fit: cover; }
+.vip-media video { background: #1b1b1b; max-height: 620px; }
+
+.vip-caption { padding: 10px 12px 2px; font-size: 12.5px; line-height: 1.55; color: #5f5f5f; }
+.vip-caption strong { color: #222; font-weight: 600; }
+.vip-post-context { margin: 8px 12px 12px; font-size: 8px; letter-spacing: 1px; }
+
+/* ações compactas, na mesma linha */
+.vip-actions { padding: 6px 10px 9px; gap: 8px; }
+.vip-action { font-size: 12px; color: #5f5f5f; }
+.vip-action svg { width: 19px; height: 19px; }
+.vip-gift { border-radius: var(--vip-radius-pill); font-size: 11.5px; padding: 7px 13px; }
+.vip-cta, .vip-promo .vip-cta { border-radius: var(--vip-radius-pill); }
+
+/* topo e filtros alinhados com a HOME */
+.vip-feed-heading { padding: 8px var(--vip-gutter) 4px; }
+.vip-filters { margin-bottom: 10px; }
+.vip-filters button { font-size: 12px; font-weight: 500; padding: 12px 8px; }
+.vip-bio, .vip-expiry { margin-inline: 12px; }
+.vip-identity { padding: 0 12px; }
+.vip-cover { margin: 8px var(--vip-gutter) 0; }
+.vip-promo { border-radius: var(--vip-radius-card); margin: 0 var(--vip-gutter); }
+
+@media (max-width: 359px) {
+  .vip-feed, .vip-feed-heading { padding-inline: 8px; }
+  .vip-cover, .vip-promo { margin-inline: 8px; }
+}
+
+/* ==========================================================================
+   ESTRUTURA EM BLOCOS — /VIP
+   Os mesmos blocos separados da HOME: perfil (com mimo e chat), filtros e
+   publicações. Fundo da coluna em cinza muito claro, cartões brancos.
+   ========================================================================== */
+
+:root { --vip-ground: #f0f0f1; --vip-block-gap: 10px; }
+
+body { background: #e9e9ea; }
+.vip-frame { background: var(--vip-ground); border-inline-color: #e4e4e5; }
+.vip-topbar { background: #fff; margin-bottom: var(--vip-block-gap); }
+
+.vip-profile,
+.vip-filters {
+  background: #fff;
+  border: 1px solid #ececec;
+  border-radius: var(--vip-radius-card);
+  margin: 0 var(--vip-gutter) var(--vip-block-gap);
+  overflow: hidden;
+}
+
+.vip-profile .vip-cover { height: 150px; margin: 0; border-radius: 0; }
+.vip-profile .vip-identity { padding: 0 14px; margin-top: -34px; }
+.vip-avatar { border-color: #fff; }
+.vip-name { font-size: 19px; font-weight: 700; }
+.vip-username { color: #8e8e93; font-size: 12px; }
+.vip-bio { margin: 12px 14px 0; font-size: 12.5px; line-height: 1.55; color: #5a5a5e; }
+.vip-expiry { margin: 8px 14px 0; font-size: 11.5px; color: #8e8e93; }
+
+/* Mimo e Chat, iguais aos da HOME. */
+.vip-profile-actions { display: flex; gap: 8px; padding: 12px 14px 14px; }
+.vip-profile-action {
+  flex: 1; min-height: 42px;
+  display: flex; align-items: center; justify-content: center; gap: 7px;
+  border: 1px solid #e7e7e8; border-radius: 10px;
+  background: #fafafa; color: #4a4a4e;
+  font: 600 12.5px Poppins, Arial, sans-serif; cursor: pointer;
+  transition: background .15s, border-color .15s;
+}
+.vip-profile-action:hover { background: #fff5ec; border-color: #ffd9b8; color: #b3560a; }
+.vip-profile-action svg { flex-shrink: 0; }
+.vip-welcome { margin: 0 14px 14px; }
+
+.vip-feed-heading { padding: 2px var(--vip-gutter) 8px; }
+.vip-filters { display: flex; padding: 0; border-bottom: 1px solid #ececec; }
+.vip-filters button { border-radius: 0; font-size: 12.5px; font-weight: 600; }
+.vip-footer { background: #fff; border-top: 1px solid #ececec; margin-top: var(--vip-block-gap); }
+
+@media (max-width: 359px) {
+  .vip-profile, .vip-filters { margin-inline: 8px; }
+  .vip-profile-actions { padding-inline: 11px; }
+}
+
+/* Linha de números do perfil, idêntica à da página de venda. */
+.vip-stats {
+  display: flex; justify-content: flex-end; align-items: center; gap: 12px;
+  padding: 10px 14px 0; margin: 0;
+  font-size: 11px; font-weight: 500; color: #4a4a4e;
+}
+.vip-stats span { display: flex; align-items: center; gap: 4px; }
+.vip-stats svg { color: #666; }
+.vip-stats b { font-weight: 500; }
+
+/* ==========================================================================
+   ACABAMENTO PREMIUM — /VIP
+   Mesmo avatar com ponto de online, mesmo nome e mesmo verificado da HOME.
+   ========================================================================== */
+
+.vip-avatar-wrap { position: relative; display: inline-block; flex-shrink: 0; }
+.vip-avatar {
+  display: block;
+  width: 84px; height: 84px;
+  border: 3px solid #fff;
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: 0 2px 10px #00000014;
+}
+.vip-avatar-wrap .online-dot {
+  position: absolute; right: 6px; bottom: 6px; z-index: 2;
+  width: 13px; height: 13px;
+  border-radius: 50%;
+  background: #22c55e;
+  border: 2.5px solid #fff;
+  box-shadow: 0 0 0 .5px #00000010;
+}
+.vip-name {
+  font-size: 20px; font-weight: 700;
+  color: #16161a; letter-spacing: -.45px; gap: 6px; align-items: center;
+}
+.verified-icon { display: block; flex-shrink: 0; }
+.vip-username { font-size: 12.5px; font-weight: 500; color: #97a0ae; letter-spacing: -.1px; }
+.vip-bio { color: #55555c; line-height: 1.6; }
+.vip-post-head b { color: #16161a; font-weight: 600; letter-spacing: -.2px; gap: 4px; }
+.vip-post-head small { color: #97a0ae; font-weight: 500; }
+.vip-profile, .vip-filters, .vip-post { border-color: #ececed; box-shadow: 0 1px 2px #0000000a; }
+.vip-profile-action { font-weight: 600; letter-spacing: -.1px; }
+
+/* Ações abaixo da mídia: coração com a contagem e o cifrão, lado a lado. */
+.vip-actions { justify-content: flex-start; gap: 16px; padding: 9px 12px 11px; }
+.vip-action {
+  display: inline-flex; align-items: center; gap: 7px;
+  background: none; border: 0; padding: 0; min-height: 26px;
+  color: #55555c; font-size: 12.5px; font-weight: 500; cursor: pointer;
+}
+.vip-gift {
+  border: 0; background: none; padding: 0; border-radius: 0;
+  color: #55555c;
+}
+.vip-gift:hover { background: none; color: #f97316; }
+.vip-action svg { width: 21px; height: 21px; }
+
+/* ==========================================================================
+   MOLDURA PADRÃO DAS MÍDIAS
+   Toda publicação ocupa exatamente o mesmo retângulo 4:5 — o formato que
+   melhor aproveita a tela do celular sem empurrar as ações para fora. A mídia
+   aparece inteira, centralizada, e a sobra das laterais recebe um quadro da
+   própria mídia, borrado. Sem tarja preta, sem post de altura diferente.
+   ========================================================================== */
+
+.vip-media {
+  position: relative;
+  aspect-ratio: 4 / 5;
+  width: 100%;
+  max-height: none;
+  overflow: hidden;
+  background: #efeff0;
+}
+.vip-media-fill {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  filter: blur(26px) saturate(1.25) brightness(.94);
+  transform: scale(1.3);
+  opacity: 0;
+  transition: opacity .3s ease;
+  pointer-events: none;
+}
+.vip-media-fill.is-painted { opacity: 1; }
+.vip-media img,
+.vip-media video {
+  position: relative; z-index: 1;
+  width: 100%; height: 100%;
+  max-height: none;
+  aspect-ratio: auto;
+  object-fit: contain;
+  background: none;
+  display: block;
+}
+
+/* ==========================================================================
+   PADRONIZAÇÃO FINAL DAS MÍDIAS
+   O preenchimento borrado caía ora nas laterais, ora em cima — porque cada
+   arquivo tem uma proporção. Resultado: cada post com uma cara. Agora a mídia
+   PREENCHE a moldura 4:5 inteira (cover). Todos os posts ficam idênticos:
+   mesmo tamanho, mesmo enquadramento, sem sobra, sem tarja e sem espelho
+   aparecendo num lado diferente a cada publicação.
+   ========================================================================== */
+
+.vip-media img,
+.vip-media video { object-fit: cover; }
+
+/* Mesmo acabamento no /vip: cantos, sombra e degradê da capa. */
+body { background: #ecebe9; }
+.vip-frame { background: #f6f4f2; border-inline-color: #e6e4e1; }
+.vip-profile, .vip-filters, .vip-post {
+  border: 1px solid #eceae8;
+  border-radius: 18px;
+  box-shadow: 0 1px 2px #0000000a, 0 10px 24px -16px #0000001f;
+}
+.vip-cover { position: relative; height: 150px; border-radius: 17px 17px 0 0; overflow: hidden; }
+.vip-cover img { width: 100%; height: 150px; object-fit: cover; object-position: center 42%; display: block; }
+.vip-cover::after {
+  content: ''; position: absolute; inset: auto 0 0 0; height: 46px;
+  background: linear-gradient(180deg, #ffffff00, #ffffffcc 72%, #fff);
+  pointer-events: none;
+}
+.vip-profile-actions { gap: 9px; padding: 14px 14px 15px; }
+.vip-profile-action { min-height: 46px; border-radius: 12px; border-color: #e8e6e3; background: #fbfaf9; }
+.vip-stats { gap: 13px; font-size: 11.5px; color: #4a4a52; }
+
+/* ==========================================================================
+   ABAS DO /VIP — a mesma barra da página inicial
+   Duas abas em cartão branco, com a seleção sublinhada em laranja. Sem filtro
+   de foto/vídeo: a aba "Postagens" traz o feed e "Mídias" traz a grade.
+   ========================================================================== */
+
+.vip-tabs {
+  display: flex;
+  background: #fff;
+  border: 1px solid #eceae8;
+  border-radius: 18px;
+  box-shadow: 0 1px 2px #0000000a, 0 10px 24px -16px #0000001f;
+  margin: 0 var(--vip-gutter) var(--vip-block-gap);
+  overflow: hidden;
+}
+.vip-tab {
+  flex: 1;
+  display: flex; align-items: center; justify-content: center; gap: 7px;
+  padding: 14px 6px;
+  border: 0; border-bottom: 2px solid transparent; border-radius: 0;
+  background: none; cursor: pointer;
+  font: 600 12.5px Poppins, Arial, sans-serif; color: #7b7b85;
+  transition: color .15s, border-color .15s;
+}
+.vip-tab svg { flex-shrink: 0; }
+.vip-tab.active { color: #f97316; border-bottom-color: #f97316; }
+.vip-tab:hover { color: #f97316; }
+
+/* Grade de mídias: os mesmos cartões, só a mídia, em duas colunas. */
+.vip-feed.is-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+.vip-feed.is-grid .vip-post-head,
+.vip-feed.is-grid .vip-caption,
+.vip-feed.is-grid .vip-actions,
+.vip-feed.is-grid .vip-post-context { display: none; }
+.vip-feed.is-grid .vip-post { border-radius: 14px; }
+.vip-feed.is-grid .vip-promo { display: none; }
+/* Na grade a mídia é só amostra: os controles do vídeo atrapalham a leitura. */
+.vip-feed.is-grid video::-webkit-media-controls { display: none !important; }
+.vip-feed.is-grid video { pointer-events: none; }
+
+/* Same banner framing as HOME. */
+.vip-profile .vip-cover{height:auto;aspect-ratio:1098/450}
+.vip-cover img{height:100%;object-fit:cover;object-position:50% 55%;background:#f3f3f3}
+.vip-name{font-weight:600;letter-spacing:0;font-size:22px}
+.vip-bio{font-size:13px;line-height:1.4;color:#222}
+
+/* Estado da curtida, compartilhado entre mouse e toque. */
+.vip-like.is-liked, .vip-like.is-liked svg { color: #e32646; fill: #e32646; stroke: #e32646; }
+@media (hover: hover) { .vip-like:hover, .vip-like:hover svg { color: #e32646; fill: #e32646; stroke: #e32646; } }
+
+/* Comentário apenas visual; curtida e mimo mantêm os handlers existentes. */
+.vip-action { min-height:44px; }
+.vip-action svg { width:23px; height:23px; stroke-width:1.4; }
+.vip-comment:disabled { opacity:1; cursor:default; }
+
+.vip-bio { font-family:Poppins,Arial,sans-serif; font-size:14px; font-weight:400; line-height:1.45; letter-spacing:0; color:#20242c; }
+
+/* Aviso rápido (ex.: curtir no modo revisão da criadora) */
+.vip-notice { position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom)); z-index: 60; max-width: min(92vw, 380px); padding: 10px 14px; border-radius: 12px; background: rgba(28, 28, 30, .92); color: #fff; font: 500 12px/1.4 Poppins, Arial, sans-serif; text-align: center; box-shadow: 0 6px 20px rgba(0, 0, 0, .18); opacity: 0; transform: translate(-50%, 8px); transition: opacity .2s, transform .2s; pointer-events: none; }
+.vip-notice.is-visible { opacity: 1; transform: translate(-50%, 0); }
+.vip-like.is-tapped svg { animation: heart-pop .25s ease-out; }
+
+/* Mídia que não abre: aviso curto, sem moldura gigante nem imagem quebrada. */
+.vip-media-missing {
+  display: grid;
+  place-items: center;
+  min-height: 92px;
+  aspect-ratio: auto !important;
+  background: repeating-linear-gradient(45deg, #efe4d7, #efe4d7 8px, #eaddcd 8px, #eaddcd 16px);
+}
+.vip-media-missing-text {
+  margin: 0;
+  padding: 26px 16px;
+  font: 11px Poppins, sans-serif;
+  color: #8d7361;
+  text-align: center;
+}

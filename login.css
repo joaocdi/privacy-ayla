@@ -1,0 +1,87 @@
+/* ==========================================================================
+   ENTRAR — tela da criadora.
+   Mobile-first de verdade: campos e botões com 48px de altura, nada dependendo
+   de hover, e a caixa cabendo em 320px sem rolagem horizontal.
+   ========================================================================== */
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  min-height: 100dvh;
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px 16px calc(24px + env(safe-area-inset-bottom));
+  background: #ecebe9;
+  font-family: 'Inter', Arial, sans-serif;
+  color: #16161a;
+  -webkit-font-smoothing: antialiased;
+}
+
+.login-frame {
+  width: 100%; max-width: 380px;
+  background: #fff;
+  border: 1px solid #eceae8;
+  border-radius: 18px;
+  box-shadow: 0 1px 2px #0000000a, 0 10px 24px -16px #0000001f;
+  padding: 26px 20px 22px;
+}
+.login-logo {
+  display: inline-block; margin-bottom: 18px;
+  font: 700 20px/1 Inter, Arial, sans-serif; letter-spacing: -.6px;
+  color: #16161a; text-decoration: none;
+}
+h1 { margin: 0 0 6px; font-size: 22px; font-weight: 700; letter-spacing: -.4px; }
+.login-hint { margin: 0 0 20px; font-size: 12.5px; line-height: 1.5; color: #8a8a92; }
+
+label {
+  display: block; margin-bottom: 6px;
+  font-size: 12.5px; font-weight: 600; color: #4a4a52;
+}
+input[type=email], input[type=password], input[type=text] {
+  width: 100%; min-height: 48px;
+  padding: 12px 14px; margin-bottom: 16px;
+  border: 1px solid #e2e0dd; border-radius: 12px;
+  background: #fbfaf9; color: #16161a;
+  /* 16px evita o zoom automático do iOS ao focar o campo. */
+  font: 400 16px Inter, Arial, sans-serif;
+}
+input:focus { outline: 2px solid #f9a03c; outline-offset: 1px; border-color: #f9a03c; background: #fff; }
+
+/* O botão de mostrar a senha fica dentro do campo, com alvo de toque cheio. */
+.login-password { position: relative; }
+.login-password input { padding-right: 92px; }
+#toggle {
+  position: absolute; right: 5px; top: 0;
+  height: 48px; min-width: 78px; padding: 0 12px;
+  border: 0; border-radius: 10px; background: none;
+  color: #b3560a; font: 600 12.5px Inter, Arial, sans-serif; cursor: pointer;
+}
+#toggle:active { background: #fff3e8; }
+
+.login-submit {
+  width: 100%; min-height: 50px;
+  border: 0; border-radius: 26px;
+  background: linear-gradient(100deg, #ff963e, #ff7715);
+  color: #241505; font: 700 14px Inter, Arial, sans-serif; cursor: pointer;
+}
+.login-submit:disabled { opacity: .6; cursor: wait; }
+
+#loginMessage:empty { display: none; }
+#loginMessage {
+  margin: 0 0 14px; padding: 11px 13px;
+  border-radius: 10px; background: #fff4ec;
+  font-size: 12.5px; line-height: 1.5; color: #8a3d05;
+  overflow-wrap: anywhere;
+}
+#loginMessage.is-ok { background: #eafaf0; color: #1a7f45; }
+
+.login-back {
+  display: block; margin-top: 18px; padding: 10px 0;
+  text-align: center; font-size: 12.5px; font-weight: 600;
+  color: #8a8a92; text-decoration: none;
+}
+
+@media (max-width: 359px) {
+  .login-frame { padding: 20px 15px 18px; border-radius: 15px; }
+  h1 { font-size: 20px; }
+}

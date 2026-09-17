@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <style>html{background:#f4f3f1}</style>
+  <link rel="preload" as="fetch" href="/api/profile" crossorigin>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#ffffff" />
+  <title>Ayla</title>
+  <meta property="og:title" content="Ayla">
+  <meta property="og:description" content="Conheça o perfil e as assinaturas da Ayla.">
+  <meta property="og:type" content="website">
+  <meta name="description" content="Um pouco da minha rotina, um lado só nosso. Conheça o clube da Ayla e escolha sua assinatura a partir de R$ 9,90." />
+  
+  
+  
+  <link rel="stylesheet" href="style.css?v=carousel-1" />
+<link rel="stylesheet" href="/frame.css?v=carousel-1">
+
+<script src="/frame.js?v=carousel-1" defer></script>
+<link rel="stylesheet" href="/carousel.css?v=carousel-1">
+<script src="/carousel.js?v=carousel-1" defer></script>
+<link rel="stylesheet" href="/fonts.css">
+<link rel="preload" as="font" type="font/woff2" href="/fonts/poppins-400-7d93459d8658.woff2" crossorigin>
+<link rel="stylesheet" href="/tips.css">
+<script src="/tips.js" defer></script>
+  <link rel="icon" href="/favicon.ico" sizes="any">
+</head>
+<body class="age-pending">
+<section id="ageGate" class="age-gate" role="dialog" aria-modal="true" aria-labelledby="ageGateTitle" aria-describedby="ageGateText">
+ <div class="age-gate-card">
+  <span class="age-gate-badge" aria-hidden="true">18+</span>
+  <h1 id="ageGateTitle">Confirme sua idade</h1>
+  <p id="ageGateText">Esta página contém conteúdo destinado exclusivamente a maiores de 18 anos.</p>
+  <button type="button" id="ageConfirm">Sou maior de 18 anos</button>
+  <button type="button" id="ageExit">Sair</button>
+ </div>
+</section>
+
+<!-- ===== MOBILE WRAPPER ===== -->
+<div class="mobile-frame" id="mobileFrame">
+
+  <details class="pending-pix-notice" id="pendingPixNotice" hidden aria-label="Compras recentes"></details>
+
+  <!-- ===== CARTÃO DE PERFIL =====
+       Bloco 1 de 4. Capa, avatar, números, identificação, bio e os botões de
+       contato. Cada bloco desta página é um cartão separado, como no feed de
+       referência: perfil, oferta, assinaturas e publicações não se misturam. -->
+  <section class="profile-card" id="profileHeader">
+
+    <!-- Cover photo -->
+    <div class="cover-wrap">
+      <img  alt="Foto de capa" class="cover-img" id="coverImg" fetchpriority="high" decoding="async" width="1280" height="525" />
+      <span class="cover-note">mais perto, mais eu.</span>
+      <a class="member-link" data-buyer-access href="/meu-acesso"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="12" cy="8" r="3.3"/><path d="M5.5 20v-1.5a6.5 6.5 0 0 1 13 0V20"/></svg><span>Minha conta</span></a>
+    </div>
+
+    <!-- Avatar + Stats row -->
+    <div class="avatar-row">
+      <div class="avatar-group">
+        <div class="avatar-wrap" id="avatarLive">
+          <img data-profile-avatar alt="Avatar" class="avatar-img" id="avatarImg" fetchpriority="high" decoding="async" width="78" height="78" />
+          <span class="online-dot" title="Online" aria-label="Online"></span>
+        </div>
+      </div>
+      <div class="stats-row">
+        <div class="stat-item">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <span id="statPhotos">—</span><small>fotos</small>
+        </div>
+        <div class="stat-item">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="1.5"/><path d="M3 8h18M8 3 5 8M14 3l-3 5M20 3l-3 5M10 11l6 3.5-6 3.5z"/></svg>
+          <span id="statVideos">—</span><small>vídeos</small>
+        </div>
+        <div class="stat-item" aria-label="Conteúdos bloqueados">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V6a4 4 0 0 1 8 0v4M12 14v3"/></svg>
+          <span id="statLocked">—</span><small>bloqueados</small>
+        </div>
+        <div class="stat-item">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#e44" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          <span id="statLikes">—</span><small>curtidas</small>
+        </div>
+      </div>
+    </div>
+
+    <!-- Profile info -->
+    <div class="profile-info">
+      <div class="name-row">
+        <h1 class="profile-name" id="profileName"></h1>
+        <span class="verified-badge" aria-label="Verificado">
+          <img class="verified-icon" src="/verified-ayla.png" width="15" height="15" alt="Verificado" />
+        </span>
+      </div>
+      <p class="profile-username" id="profileUsername"></p>
+      <p class="profile-bio" id="profileBio"></p>
+      <button class="read-more-btn" id="readMoreBtn">Ler mais</button>
+      <!-- Localização: preenchida por app.js só quando `creator.location` existir. -->
+      <p class="profile-location" id="profileLocation" hidden>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        <span id="profileLocationText"></span>
+      </p>
+      <div class="social-links">
+        <a href="https://t.me/aylabl0nde_bot" target="_blank" rel="noopener noreferrer" class="ig-btn" aria-label="Telegram da Ayla" id="igBtn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m21 3-7 18-4-7-7-4 18-7Z"/><path d="m10 14 11-11"/></svg>
+        </a>
+      </div>
+    </div>
+
+    <!-- Contato da Ayla. -->
+    <div class="profile-actions">
+
+    </div>
+  </section>
+
+  <!-- ===== OFERTA DE ASSINATURA =====
+       Bloco 2 de 4. O plano em destaque, isolado do resto. Preços vêm do
+       catálogo do backend; nada aqui altera valor. -->
+
+  <section class="offer-card" id="offerCard">
+    <h2 class="offer-title">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.2l1.9 4.9 4.9 1.9-4.9 1.9L12 16.8l-1.9-4.9L5.2 10l4.9-1.9z"/><path d="M18.5 16.2l.7 1.8 1.8.7-1.8.7-.7 1.8-.7-1.8-1.8-.7 1.8-.7z"/></svg>
+      Assinatura mensal
+    </h2>
+<div class="offer-cta">
+<button class="btn-plan primary-plan" id="btnPlan1m">
+        <span class="plan-cta-label">Assinar agora <span class="plan-price">R$ 9,90</span></span>
+      </button>
+    </div>
+  </section>
+
+  <!-- ===== ASSINATURAS =====
+       Bloco 3 de 4. Os demais períodos, em pílulas: duração à esquerda,
+       preço à direita. -->
+  <section class="plans-section" id="subscriptionPlans">
+    <div class="plans-header-toggle" id="promoToggle" role="button" tabindex="0" aria-expanded="true">
+      <h2 class="plans-title">Assinaturas</h2>
+      <svg class="chevron-icon" id="promoChevron" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="18 15 12 9 6 15"></polyline>
+      </svg>
+    </div>
+    <div class="promo-plans-content open" id="promoPlansContent">
+      <button class="btn-plan" id="btnPlan3m">
+        <span>3 meses <em class="plan-pill">33% OFF</em></span>
+        <span class="plan-price">R$ 19,90</span>
+      </button>
+      <button class="btn-plan" id="btnPlan6m">
+        <span>6 meses <em class="plan-pill">50% OFF</em></span>
+        <span class="plan-price">R$ 29,90</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- ===== PUBLICAÇÕES =====
+       Bloco 4 de 4. Abas e o feed bloqueado. -->
+  <section class="content-section" id="contentTabs">
+    <div class="tabs-bar">
+      <button class="tab-btn active" id="tab1">
+        <svg width="18" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" aria-hidden="true"><rect x="6" y="4" width="12" height="16" rx="1.5"/><path d="M9 1h6M9 23h6"/></svg>
+        <span id="tabPostsLabel">Postagens</span>
+      </button>
+      <button class="tab-btn" id="tab2">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="1.5"/><path d="M3 8h18M8 3 5 8M14 3l-3 5M20 3l-3 5M10 11l6 3.5-6 3.5z"/></svg>
+        <span id="tabMediaLabel">Mídias</span>
+      </button>
+    </div>
+
+    <!-- POST 1 (Image) -->
+    <div class="post-header">
+      <img data-profile-avatar alt="Avatar" class="post-avatar" />
+      <div class="post-info">
+        <div class="post-name-row">
+          <span class="post-name dynamic-post-name"></span>
+          <img class="verified-icon" src="/verified-ayla.png" width="12" height="12" alt="Verificado" />
+        </div>
+        <span class="post-username dynamic-post-username"></span>
+      </div>
+      <button class="post-menu" aria-label="Menu"><span></span><span></span><span></span></button>
+    </div>
+    <div class="locked-post">
+      <img src="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'%3E%3Crect width='4' height='5' fill='%23e9e2da'/%3E%3C/svg%3E" alt="Prévia desfocada de uma foto exclusiva" class="locked-img" loading="lazy" width="480" height="600" />
+      <div class="locked-overlay">
+        <div class="lock-icon">
+          <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+        </div>
+        <p class="locked-text">Conteúdo exclusivo</p>
+        <button class="btn-orange btn-unlock">Assinar por R$ 9,90</button>
+      </div>
+    </div>
+
+    <!-- POST 3 (Video 1) -->
+    <div class="post-header" style="margin-top: 15px;">
+      <img data-profile-avatar alt="Avatar" class="post-avatar" />
+      <div class="post-info">
+        <div class="post-name-row">
+          <span class="post-name dynamic-post-name"></span>
+          <img class="verified-icon" src="/verified-ayla.png" width="12" height="12" alt="Verificado" />
+        </div>
+        <span class="post-username dynamic-post-username"></span>
+      </div>
+      <button class="post-menu" aria-label="Menu"><span></span><span></span><span></span></button>
+    </div>
+    <div class="locked-post">
+      <img src="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'%3E%3Crect width='4' height='5' fill='%23e9e2da'/%3E%3C/svg%3E" alt="Prévia desfocada de um vídeo exclusivo" class="locked-img" loading="lazy" width="480" height="600" />
+      <div class="locked-overlay">
+        <div class="lock-icon">
+          <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+        </div>
+        <p class="locked-text">Conteúdo exclusivo</p>
+        <button class="btn-orange btn-unlock">Assinar por R$ 9,90</button>
+      </div>
+    </div>
+
+    <!-- POST 4 (Video 2) -->
+    <div class="post-header" style="margin-top: 15px;">
+      <img data-profile-avatar alt="Avatar" class="post-avatar" />
+      <div class="post-info">
+        <div class="post-name-row">
+          <span class="post-name dynamic-post-name"></span>
+          <img class="verified-icon" src="/verified-ayla.png" width="12" height="12" alt="Verificado" />
+        </div>
+        <span class="post-username dynamic-post-username"></span>
+      </div>
+      <button class="post-menu" aria-label="Menu"><span></span><span></span><span></span></button>
+    </div>
+    <div class="locked-post">
+      <img src="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'%3E%3Crect width='4' height='5' fill='%23e9e2da'/%3E%3C/svg%3E" alt="Prévia desfocada de um vídeo exclusivo" class="locked-img" loading="lazy" width="480" height="600" />
+      <div class="locked-overlay">
+        <div class="lock-icon">
+          <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+        </div>
+        <p class="locked-text">Conteúdo exclusivo</p>
+        <button class="btn-orange btn-unlock">Assinar por R$ 9,90</button>
+      </div>
+    </div>
+
+    <!-- POST 5 (Video 3) -->
+    <div class="post-header" style="margin-top: 15px;">
+      <img data-profile-avatar alt="Avatar" class="post-avatar" />
+      <div class="post-info">
+        <div class="post-name-row">
+          <span class="post-name dynamic-post-name"></span>
+          <img class="verified-icon" src="/verified-ayla.png" width="12" height="12" alt="Verificado" />
+        </div>
+        <span class="post-username dynamic-post-username"></span>
+      </div>
+      <button class="post-menu" aria-label="Menu"><span></span><span></span><span></span></button>
+    </div>
+    <div class="locked-post">
+      <img src="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'%3E%3Crect width='4' height='5' fill='%23e9e2da'/%3E%3C/svg%3E" alt="Prévia desfocada de um vídeo exclusivo" class="locked-img" loading="lazy" width="480" height="600" />
+      <div class="locked-overlay">
+        <div class="lock-icon">
+          <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+        </div>
+        <p class="locked-text">Conteúdo exclusivo</p>
+        <button class="btn-orange btn-unlock">Assinar por R$ 9,90</button>
+      </div>
+    </div>
+
+    <!-- POST 6 (Video 4) -->
+    <div class="post-header" style="margin-top: 15px;">
+      <img data-profile-avatar alt="Avatar" class="post-avatar" />
+      <div class="post-info">
+        <div class="post-name-row">
+          <span class="post-name dynamic-post-name"></span>
+          <img class="verified-icon" src="/verified-ayla.png" width="12" height="12" alt="Verificado" />
+        </div>
+        <span class="post-username dynamic-post-username"></span>
+      </div>
+      <button class="post-menu" aria-label="Menu"><span></span><span></span><span></span></button>
+    </div>
+    <div class="locked-post">
+      <img src="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'%3E%3Crect width='4' height='5' fill='%23e9e2da'/%3E%3C/svg%3E" alt="Prévia desfocada de um vídeo exclusivo" class="locked-img" loading="lazy" width="480" height="600" />
+      <div class="locked-overlay">
+        <div class="lock-icon">
+          <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+        </div>
+        <p class="locked-text">Conteúdo exclusivo</p>
+        <button class="btn-orange btn-unlock">Assinar por R$ 9,90</button>
+      </div>
+    </div>
+
+    <!-- POST 7 (Video 5) -->
+    <div class="post-header" style="margin-top: 15px;">
+      <img data-profile-avatar alt="Avatar" class="post-avatar" />
+      <div class="post-info">
+        <div class="post-name-row">
+          <span class="post-name dynamic-post-name"></span>
+          <img class="verified-icon" src="/verified-ayla.png" width="12" height="12" alt="Verificado" />
+        </div>
+        <span class="post-username dynamic-post-username"></span>
+      </div>
+      <button class="post-menu" aria-label="Menu"><span></span><span></span><span></span></button>
+    </div>
+    <div class="locked-post">
+      <img src="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'%3E%3Crect width='4' height='5' fill='%23e9e2da'/%3E%3C/svg%3E" alt="Prévia desfocada de um vídeo exclusivo" class="locked-img" loading="lazy" width="480" height="600" />
+      <div class="locked-overlay">
+        <div class="lock-icon">
+          <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+        </div>
+        <p class="locked-text">Conteúdo exclusivo</p>
+        <button class="btn-orange btn-unlock">Assinar por R$ 9,90</button>
+      </div>
+    </div>
+
+    <!-- POST 8 (Video 6) -->
+    <div class="post-header" style="margin-top: 15px;">
+      <img data-profile-avatar alt="Avatar" class="post-avatar" />
+      <div class="post-info">
+        <div class="post-name-row">
+          <span class="post-name dynamic-post-name"></span>
+          <img class="verified-icon" src="/verified-ayla.png" width="12" height="12" alt="Verificado" />
+        </div>
+        <span class="post-username dynamic-post-username"></span>
+      </div>
+      <button class="post-menu" aria-label="Menu"><span></span><span></span><span></span></button>
+    </div>
+    <div class="locked-post" style="margin-bottom: 20px;">
+      <img src="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'%3E%3Crect width='4' height='5' fill='%23e9e2da'/%3E%3C/svg%3E" alt="Prévia desfocada de um vídeo exclusivo" class="locked-img" loading="lazy" width="480" height="600" />
+      <div class="locked-overlay">
+        <div class="lock-icon">
+          <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+        </div>
+        <p class="locked-text">Conteúdo exclusivo</p>
+        <button class="btn-orange btn-unlock">Assinar por R$ 9,90</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Rodapé enxuto: só o aviso legal e o atalho para quem já assinou. -->
+  <footer class="home-footer"><p>Conteúdo exclusivo para maiores de 18 anos.</p><a data-buyer-access href="/meu-acesso">Já assinou? Meu acesso</a></footer>
+</div><!-- end mobile-frame -->
+
+
+
+
+<!-- ===== CHECKOUT MODAL ===== -->
+<div class="modal-overlay" id="checkoutModalOverlay" role="dialog" aria-modal="true" aria-label="Checkout">
+  <div class="checkout-modal">
+    <div class="checkout-header">
+      <button class="checkout-close" id="closeCheckoutModal" aria-label="Fechar">✕</button>
+    </div>
+    <div class="checkout-body">
+
+      <div class="checkout-plan-info" id="checkoutPlanInfo">
+        <span class="checkout-product-icon" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="3"/><path d="m8 12 3 3 5-6"/></svg></span>
+        <div class="checkout-product-description"><span class="checkout-summary-label">Você selecionou</span><span class="checkout-plan-label" id="checkoutPlanLabel">1 mês</span></div>
+        <span class="checkout-plan-price" id="checkoutPlanPrice">R$ 9,90</span>
+      </div>
+
+<!-- Loading State -->
+      <div id="pixLoadingState" class="pix-loading-box" style="display: none;">
+        <div class="pix-spinner"></div>
+        <span class="pix-loading-text">Gerando QR Code PIX...</span>
+      </div>
+
+      <!-- Active PIX Area -->
+      <div id="pixActiveArea" style="display:none;">
+        <p id="pixMockNotice" class="checkout-note" hidden>Modo de demonstração · este PIX não é pagável.</p>
+        <button type="button" id="stagingConfirm" class="btn-orange btn-pix" hidden>SIMULAR PAGAMENTO — STAGING</button>
+        <p class="pix-instruction">Pague com Pix</p>
+        <div class="pix-qr-container">
+          <img id="pixQrImage" src="" alt="QR Code PIX" class="pix-qr-image" />
+        </div>
+
+        <div class="pix-copypaste-container">
+          <label class="pix-copypaste-title">PIX copia e cola</label>
+          <div class="pix-copypaste-input-wrap">
+            <input type="text" id="pixCodeInput" class="pix-copypaste-field" readonly />
+            <button type="button" class="pix-btn-copy" id="btnCopyPix">COPIAR CÓDIGO PIX</button>
+          </div>
+        </div>
+
+        <ol class="buyer-pix-steps"><li>Toque em “Copiar código Pix”.</li><li>Abra o aplicativo do seu banco.</li><li>Escolha Pix → Copia e Cola.</li><li>Cole o código e confirme o pagamento.</li></ol><p class="checkout-note">Não precisa atualizar esta página.</p>
+        <div class="pix-status-container" id="pixStatusContainer">
+          <span class="pix-status-indicator"></span>
+          <span class="pix-status-message" id="pixStatusMessage" role="status" aria-live="polite">Aguardando pagamento...</span>
+        </div>
+
+
+      </div>
+
+      <p class="checkout-note checkout-security">Acesso liberado após a confirmação do pagamento.<br>Seus dados ficam protegidos.</p>
+    </div>
+  </div>
+</div>
+
+<button type="button" class="contact-fab" id="contactFab" aria-label="Abrir contato da Ayla" aria-expanded="false" aria-controls="contactChat">
+ <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M5 4h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H9l-5 3V6a2 2 0 0 1 1-2z"/></svg>
+</button>
+<section id="contactChat" class="contact-chat" hidden aria-label="Contato da Ayla">
+ <header><img data-profile-avatar alt=""/><div><div class="contact-name-row"><strong class="dynamic-post-name">Ayla</strong><span class="contact-online-dot" aria-hidden="true"></span></div><small class="contact-online-label">Online</small></div><button type="button" id="contactChatClose" aria-label="Fechar chat">×</button></header>
+ <div class="contact-chat-messages"><div id="contactTyping" class="contact-typing" role="status" aria-label="Preparando mensagem" hidden><span></span><span></span><span></span></div><p id="contactWelcome" hidden>Oi! Que bom ter você por aqui 🧡</p></div>
+ <form id="contactReply"><input aria-label="Sua mensagem" placeholder="Digite uma mensagem…" maxlength="500" autocomplete="off"/><button type="submit" aria-label="Continuar para desbloquear contato">➤</button></form>
+</section>
+<div class="modal-overlay" id="contactUnlockModal"><section class="contact-unlock" role="dialog" aria-modal="true" aria-labelledby="contactUnlockTitle">
+ <button type="button" class="contact-unlock-close" id="contactUnlockClose" aria-label="Fechar">×</button>
+ <div class="contact-unlock-icon" aria-hidden="true"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V6a4 4 0 0 1 8 0v4"/></svg></div>
+ <h2 id="contactUnlockTitle">Desbloqueie meu contato</h2>
+ <p>Desbloqueie meu contato do WhatsApp e venha conversar comigo 🧡</p>
+ <button type="button" id="contactBuy" class="btn-orange">DESBLOQUEAR CONTATO</button>
+ <p id="contactUnlockStatus" role="status"></p>
+ <button type="button" id="contactUnlockLater" class="contact-later">Agora não</button>
+</section></div>
+
+<script defer src="/pending-checkouts.js"></script>
+<script defer src="app.js?v=carousel-1"></script>
+<script defer src="/admin-loader.js?v=1"></script>
+
+</body>
+</html>

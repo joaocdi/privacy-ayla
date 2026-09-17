@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Ayla · Publicações</title><link rel="stylesheet" href="/admin/style.css"></head>
+<body><header><a class="brand" href="/">ayla<span>.</span></a><span>Publicações</span><button id="logout" class="secondary">Sair</button></header>
+<main class="workspace"><div class="heading"><div><h1>Seu conteúdo</h1><p>Fotos, vídeos e legendas do feed VIP.</p></div><button id="newPost">Nova publicação</button></div>
+<p id="message" role="status" aria-live="polite"></p>
+<details class="profile-panel"><summary>Perfil — nome, bio, avatar e capa</summary>
+<form id="profileForm"><p>As alterações aparecem na HOME e no VIP. Avatar e capa são imagens públicas do perfil; use somente fotos que deseja mostrar a visitantes.</p>
+<label>Nome<input id="profileName" maxlength="80" required></label>
+<label>Username<input id="profileUsername" maxlength="80" pattern="@[A-Za-z0-9._]+" required></label>
+<label>Bio<textarea id="profileBio" maxlength="4000" rows="4"></textarea></label>
+<div class="profile-images"><label>Avatar<img id="profileAvatar" alt="Avatar atual"><input id="profileAvatarFile" type="file" accept="image/jpeg,image/png,image/webp"></label>
+<label>Capa<img id="profileCover" alt="Capa atual"><input id="profileCoverFile" type="file" accept="image/jpeg,image/png,image/webp"></label></div>
+<p class="hint">JPG, PNG ou WebP. Para a capa, prefira uma foto horizontal (aproximadamente 2,44:1). Sem selecionar um arquivo, a imagem atual é preservada.</p>
+<progress id="profileProgress" max="100" value="0" hidden></progress><p id="profileMessage" role="status"></p>
+<button id="saveProfile" type="submit">Salvar perfil</button><button id="reloadProfile" class="secondary" type="button">Recarregar perfil</button></form></details>
+<section class="source"><h2>Feed dos assinantes</h2><p id="feedSource"></p><div class="actions"><button id="activate" class="secondary">Usar publicações do painel</button><button id="fallback" class="secondary">Usar feed antigo</button><button id="migrate" class="secondary">Importar posts antigos como rascunhos</button></div><p class="hint">A importação copia somente os registros. Nenhum arquivo é enviado. Rascunhos e arquivados nunca aparecem no feed gerenciado.</p></section>
+<div class="toolbar"><label>Mostrar<select id="filter"><option value="active">Publicações e rascunhos</option><option value="published">Publicados</option><option value="draft">Rascunhos</option><option value="archived">Arquivados</option></select></label><button id="refresh" class="secondary">Atualizar</button></div>
+<section id="posts" aria-label="Lista de publicações"></section><p id="empty" hidden>Nenhuma publicação nesta seleção. Comece em “Nova publicação”.</p>
+</main>
+<dialog id="editor"><form id="postForm"><div class="heading"><h2 id="editorTitle">Nova publicação</h2><button type="button" id="closeEditor" class="secondary" aria-label="Fechar editor">Fechar</button></div>
+<label>Foto ou vídeo<input type="file" id="file" accept="image/jpeg,image/png,image/webp,video/mp4,video/webm"></label><p id="uploadHint" class="hint"></p><div id="preview"></div>
+<label>Legenda<textarea id="caption" maxlength="4000" rows="5" placeholder="Escreva a legenda…"></textarea></label>
+<div class="form-row"><label>Ordem no feed<input id="sortOrder" type="number" min="-1000000" max="1000000" step="1" required value="0"></label><label class="checkbox"><input id="published" type="checkbox"> Publicado</label></div>
+<label class="checkbox"><input id="showAsPreview" type="checkbox"> Mostrar como prévia na HOME</label>
+<div id="previewSample" hidden><img id="previewSampleImg" alt="Amostra reduzida e desfocada que os visitantes verão"><span>Amostra da HOME: reduzida no seu navegador. A mídia original nunca é enviada para a página pública.</span></div>
+<p class="hint">Ordem menor aparece primeiro. Desmarque “Publicado” para salvar como rascunho. A prévia da HOME só aparece quando a publicação também está publicada.</p>
+<progress id="progress" max="100" value="0" hidden></progress><p id="editorMessage" role="status"></p><button type="submit" id="save">Salvar publicação</button></form></dialog>
+<section class="panel" aria-labelledby="conversionTitle"><h2 id="conversionTitle">Etapas de compra · últimos 30 dias</h2><p>Aberturas estimadas por tentativa; pagamentos confirmados vêm dos pedidos. Cliques no WhatsApp não comprovam envio de mensagem.</p><div id="conversionReport">Carregando…</div></section><script src="/image-tools.js"></script><script src="/admin/app.js"></script></body></html>

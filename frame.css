@@ -1,0 +1,9 @@
+.crop-frame{display:block;position:relative;overflow:hidden;isolation:isolate}
+.crop-editor{margin:16px 0;min-width:0}.crop-editor-view{width:100%;max-width:360px;margin:10px auto;background:#f3f3f3;touch-action:none;cursor:grab;user-select:none}
+.crop-editor-view:active{cursor:grabbing}.crop-controls{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.crop-controls button,.crop-controls select{min-width:44px;min-height:44px;padding:8px;border:1px solid #ddd;border-radius:8px;background:#fff;color:#222;font:inherit}
+.crop-controls input{min-width:80px;min-height:44px;flex:1;accent-color:#ff862b}.crop-controls output{min-width:44px}
+.crop-editor img,.crop-editor video{border:0!important;pointer-events:none}.crop-editor strong{font-size:14px}
+/* Editor de enquadramento sem arquivo: aviso curto, sem moldura gigante. */
+.crop-editor-empty{margin:0;padding:22px 14px;text-align:center;font:12px Poppins,system-ui,sans-serif;color:#8a8a8a;}
+.crop-editor-view:has(.crop-editor-empty){min-height:0;aspect-ratio:auto;background:#00000008;}
