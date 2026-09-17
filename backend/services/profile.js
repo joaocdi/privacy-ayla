@@ -23,7 +23,9 @@ function present(row) {
  */
 async function stats(db = null) {
   const conn = db || await getDb();
-  const base = Number(String(defaults.stats?.likes ?? 0).replace(/[^0-9]/g, '')) || 0;
+  const inteiro = valor => Number(String(valor ?? 0).replace(/[^0-9]/g, '')) || 0;
+  const base = inteiro(defaults.stats?.likes);
+  const baseConteudo = { posts: inteiro(defaults.stats?.posts), photos: inteiro(defaults.stats?.photos), videos: inteiro(defaults.stats?.videos) };
   const posts = Number((await conn.get("SELECT COUNT(*) AS n FROM vip_posts WHERE creator_id='ayla' AND published=1 AND archived=0")).n) || 0;
   const rows = await conn.all(`SELECT m.type AS type, COUNT(*) AS n FROM vip_post_media m
     JOIN vip_posts p ON p.id=m.post_id
@@ -35,7 +37,12 @@ async function stats(db = null) {
     FROM vip_posts WHERE creator_id='ayla' AND published=1 AND archived=0`)).historic) || 0;
   const reais = Number((await conn.get(`SELECT COUNT(*) AS n FROM vip_post_likes l JOIN vip_posts q ON q.id=l.post_id
     WHERE q.creator_id='ayla' AND q.published=1 AND q.archived=0`)).n) || 0;
-  return { posts, photos: byType.image || 0, videos: byType.video || 0, likes: base + counted + reais };
+  return {
+    posts: baseConteudo.posts + posts,
+    photos: baseConteudo.photos + (byType.image || 0),
+    videos: baseConteudo.videos + (byType.video || 0),
+    likes: base + counted + reais
+  };
 }
 
 async function get() {

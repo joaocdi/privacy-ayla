@@ -84,7 +84,17 @@ async function seedPost(db, { id, published, type = 'image', likes = 0 }) {
     const pedido = await require('../services/orders').createOrder(require('../products').ayla_monthly, crypto.randomBytes(32).toString('hex'), 'mock');
     await db.run('INSERT INTO vip_post_likes(id,post_id,order_id) VALUES (?,?,?)', crypto.randomUUID(), 'foto-1', pedido.id);
     const stats = await profile.stats();
-    assert.deepEqual(stats, { posts: 3, photos: 2, videos: 1, likes: 27401 }, 'conta só o publicado, soma curtidas reais');
+    // Base histórica configurada em vip-content.js + conteúdo real publicado.
+    const cfg = legacy.profile.stats;
+    const numero = v => Number(String(v).replace(/[^0-9]/g, '')) || 0;
+    assert.deepEqual(stats, {
+      posts: numero(cfg.posts) + 3,
+      photos: numero(cfg.photos) + 2,
+      videos: numero(cfg.videos) + 1,
+      likes: numero(cfg.likes) + 27401
+    }, 'base histórica + publicado, somando curtidas reais');
+    assert.ok(numero(cfg.likes) >= 23000 && numero(cfg.posts) >= 100,
+      'base histórica configurada deixa o perfil acima de 28K curtidas com as curtidas reais');
     const perfil = await (await fetch(base + '/api/profile')).json();
     assert.deepEqual(perfil.stats, stats, '/api/profile entrega os mesmos números');
     assert.ok(oculto, 'rascunho existe, mas fora da contagem');

@@ -20,7 +20,19 @@ if (process.env.VERCEL_ENV === 'preview') {
 }
 const { app, ready } = require('../backend/server');
 
+// Arquivo estático não precisa de banco. Se algum deles escapar da CDN e cair
+// aqui, ele é servido na hora, sem esperar o `ready()` (que conecta no banco).
+// Assim uma instância fria nunca segura a primeira pintura da página.
+const SEM_BANCO = /\.(?:css|js|jpg|jpeg|png|webp|svg|ico|woff2)$/i;
+function estatico(req) {
+  if (req.method !== 'GET' && req.method !== 'HEAD') return false;
+  const rota = String(req.url || '/').split('?')[0];
+  if (rota.startsWith('/api/')) return false;
+  return rota === '/' || rota === '/vip' || rota === '/criadora/login' || SEM_BANCO.test(rota);
+}
+
 module.exports = async (req, res) => {
+  if (estatico(req)) return app(req, res);
   try {
     await ready();
   } catch (error) {

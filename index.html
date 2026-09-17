@@ -3,6 +3,20 @@
 <head>
   <meta charset="UTF-8" />
   <style>html{background:#f4f3f1}</style>
+  <style>
+  /* Crítico: a tela 18+ pinta junto com o HTML, sem esperar o style.css. */
+  body.age-pending{overflow:hidden}
+  body.age-pending > :not(#ageGate):not(script){visibility:hidden!important}
+  .age-gate[hidden]{display:none}
+  .age-gate{position:fixed;inset:0;z-index:100000;display:grid;place-items:center;padding:20px;overflow:auto;background:#fff;font-family:Poppins,Arial,sans-serif;color:#293142}
+  .age-gate-card{width:min(100%,380px);text-align:center;border:1px solid #ededed;border-radius:22px;padding:30px 24px 20px}
+  .age-gate-badge{display:inline-grid;place-items:center;width:60px;height:60px;border-radius:50%;background:#fff1e6;color:#ef7623;font-size:23px;font-weight:600}
+  .age-gate h1{margin:20px 0 12px;font-size:22px;line-height:1.3}
+  .age-gate p{margin:0 0 24px;font-size:14px;line-height:1.6}
+  .age-gate button{width:100%;min-height:48px;border:0;border-radius:26px;font:500 14px Poppins,Arial,sans-serif;cursor:pointer}
+  #ageConfirm{background:linear-gradient(105deg,#ff963f,#fac69f,#f8a598);color:#202020}
+  #ageExit{margin-top:8px;background:none;color:#666}
+  </style>
   <link rel="preload" as="fetch" href="/api/profile" crossorigin>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#ffffff" />
@@ -36,6 +50,15 @@
   <button type="button" id="ageExit">Sair</button>
  </div>
 </section>
+<script>
+/* Confirmação já funciona antes do app.js chegar; o app.js reconfirma depois
+   pelo sessionStorage, então clicar duas vezes não muda nada. */
+(function(){var g=document.getElementById('ageGate'),ok=document.getElementById('ageConfirm');
+function entrar(){window.__ageOk=true;g.hidden=true;document.body.classList.remove('age-pending');}
+try{if(sessionStorage.getItem('ayla.age.confirmed')==='yes')entrar();}catch(e){}
+ok.addEventListener('click',function(){try{sessionStorage.setItem('ayla.age.confirmed','yes');}catch(e){}entrar();});
+document.getElementById('ageExit').addEventListener('click',function(){window.location.replace('about:blank');});})();
+</script>
 
 <!-- ===== MOBILE WRAPPER ===== -->
 <div class="mobile-frame" id="mobileFrame">

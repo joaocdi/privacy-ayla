@@ -11,8 +11,11 @@ window.ageReady = new Promise(resolve => { resolveAgeReady = resolve; });
     document.body.classList.remove('age-pending');
     resolveAgeReady();
   }
-  let confirmed = false;
-  try { confirmed = sessionStorage.getItem('ayla.age.confirmed') === 'yes'; } catch (_) {}
+  // A tela 18+ já pode ter sido confirmada pelo script embutido no HTML
+  // (ele responde antes deste arquivo chegar). sessionStorage pode estar
+  // bloqueado, então a marca global também vale.
+  let confirmed = window.__ageOk === true;
+  try { confirmed = confirmed || sessionStorage.getItem('ayla.age.confirmed') === 'yes'; } catch (_) {}
   if (confirmed) enter();
   else document.getElementById('ageConfirm').focus();
   document.getElementById('ageConfirm').addEventListener('click', () => {

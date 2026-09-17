@@ -2,7 +2,7 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": null,
   "outputDirectory": "public",
-  "buildCommand": "node -e \"const fs=require('fs');fs.mkdirSync('public',{recursive:true});fs.copyFileSync('verified-ayla.png','public/verified-ayla.png');fs.cpSync('fonts','public/fonts',{recursive:true})\"",
+  "buildCommand": "node build-public.js",
   "installCommand": "npm ci --prefix backend --omit=dev --omit=optional",
   "functions": {
     "api/index.js": {
@@ -11,6 +11,14 @@
     }
   },
   "rewrites": [
+    {
+      "source": "/vip",
+      "destination": "/vip.html"
+    },
+    {
+      "source": "/criadora/login",
+      "destination": "/login.html"
+    },
     {
       "source": "/(.*)",
       "destination": "/api/index"
@@ -23,6 +31,15 @@
     }
   ],
   "headers": [
+    {
+      "source": "/:page(index.html|vip.html|login.html)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ]
+    },
     {
       "source": "/fonts/(.*)",
       "headers": [
