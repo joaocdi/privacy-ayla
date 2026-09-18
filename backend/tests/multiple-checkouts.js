@@ -15,7 +15,7 @@ let server, browser;
   browser = await chromium.launch({ headless: true, executablePath: 'C:/Program Files/Google/Chrome/Application/chrome.exe' });
   const context = await browser.newContext({ viewport: { width: 390, height: 850 } });
   const first = await context.newPage(), second = await context.newPage();
-  for (const page of [first, second]) { await page.goto(base); await page.locator('#ageConfirm').click(); }
+  for (const page of [first, second]) { await page.goto(base); if (await page.locator('#ageGate').isVisible()) await page.locator('#ageConfirm').click(); }
   let dropped = false;
   await first.route('**/api/payments/pix', async route => {
     if (dropped) return route.continue();
@@ -25,8 +25,8 @@ let server, browser;
   await first.getByRole('button', { name: 'Tentar novamente', exact: true }).waitFor();
   await second.locator('#pixActiveArea').waitFor({ state: 'visible' });
   await second.evaluate(() => closeCheckout());
-  await first.reload(); await first.locator('#pendingPixNotice').waitFor({ state: 'visible' });
-  assert.equal(await first.locator('.pending-pix-row').count(), 2);
+  await first.reload(); await first.locator('#pixNotificationBell').waitFor({ state: 'visible' });
+  await first.locator('#pixNotificationBell').click(); assert.equal(await first.locator('#pixNotificationContinue').count(), 1);
   assert.equal(await first.locator('#checkoutModalOverlay').evaluate(e => e.classList.contains('open')), false);
   await first.evaluate(() => openCheckout('ayla_monthly')); await first.locator('#pixActiveArea').waitFor({ state: 'visible' });
   const entries = await first.evaluate(() => AylaCheckouts.list());
@@ -49,7 +49,7 @@ let server, browser;
   await first.locator('#submit').click(); await first.waitForURL('**/meu-acesso');
   assert.deepEqual(await first.evaluate(() => AylaCheckouts.list().map(item => item.productId)), ['ayla_whatsapp_unlock']);
   await confirmPayment(contact.payment.orderId);
-  await second.reload(); await second.locator('#pendingPixNotice summary').click(); await second.getByRole('button', { name: 'Criar meu acesso', exact: true }).click();
+  await second.reload(); await second.locator('#pixNotificationBell').click(); await second.getByRole('button', { name: 'Criar meu acesso', exact: true }).click();
   await second.waitForURL('**/meu-acesso'); await second.getByRole('button', { name: 'Abrir meu WhatsApp' }).waitFor();
   assert.equal(await second.evaluate(() => AylaCheckouts.list().length), 0);
   const rows = await (await db.getDb()).all('SELECT o.public_id,o.buyer_id,e.grant_type,e.expires_at FROM orders o JOIN entitlements e ON e.order_id=o.id ORDER BY o.id');

@@ -28,7 +28,8 @@ function estatico(req) {
   if (req.method !== 'GET' && req.method !== 'HEAD') return false;
   const rota = String(req.url || '/').split('?')[0];
   if (rota.startsWith('/api/')) return false;
-  return rota === '/' || rota === '/vip' || rota === '/criadora/login' || SEM_BANCO.test(rota);
+  const PAGINAS = ['/', '/vip', '/criadora/login', '/termos', '/privacidade', '/aviso-de-conteudo', '/contato'];
+  return PAGINAS.includes(rota) || SEM_BANCO.test(rota);
 }
 
 module.exports = async (req, res) => {

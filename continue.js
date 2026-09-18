@@ -6,7 +6,8 @@
  const auth=()=>({Authorization:'Bearer '+item.token});
  function stop(){clearInterval(timer);clearTimeout(poller);version++;}
  function clock(value,v){clearInterval(timer);expiresAt=value;const ms=value?Date.parse(String(value).replace(' ','T')+(String(value).includes('Z')?'':'Z')):NaN;
-  if(!Number.isFinite(ms)){$('remaining').textContent='Prazo não informado pela operadora';return;}
+  if(!Number.isFinite(ms)){$('remaining').textContent='';$('remaining').hidden=true;return;}
+  $('remaining').hidden=false;
   function tick(){if(v!==version)return;const seconds=Math.max(0,Math.ceil((ms-Date.now())/1000));$('remaining').textContent=seconds?('Tempo restante: '+String(Math.floor(seconds/60)).padStart(2,'0')+':'+String(seconds%60).padStart(2,'0')):'Prazo encerrado';if(!seconds){clearInterval(timer);track('pix_expired');$('pix').hidden=true;expired();}}
   tick();timer=setInterval(tick,1000);
  }

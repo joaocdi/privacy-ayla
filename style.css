@@ -1857,11 +1857,6 @@ body { background: #ecebe9; }
 .contact-later { border:0; background:none; min-height:44px; font:400 12px Poppins,Arial,sans-serif; color:#777; cursor:pointer; }
 @media(max-width:359px) { .contact-chat { right:12px; } }
 .contact-chat-messages > .btn-orange { display:block; width:100%; min-height:44px; margin-top:12px; border:0; border-radius:24px; background:linear-gradient(105deg,#ff963f,#fac69f,#f8a598); color:#20242c; font:500 13px Poppins,Arial,sans-serif; cursor:pointer; }
-.pending-pix-notice { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; margin:12px 8px; padding:12px 14px; border:1px solid #f4cba9; border-radius:14px; background:#fff8f1; color:#49382f; font:500 12px/1.45 Poppins,Arial,sans-serif; }
-.pending-pix-notice button { min-height:40px; padding:8px 14px; border:0; border-radius:22px; background:#ff963f; color:#20242c; font:600 12px Poppins,Arial,sans-serif; cursor:pointer; }
-.pending-pix-notice button:focus-visible { outline:3px solid #65472f; outline-offset:2px; }
-.pending-pix-row { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; width:100%; }
-.pending-pix-row + .pending-pix-row { border-top:1px solid #f4cba9; padding-top:10px; }
 .checkout-reference { overflow-wrap:anywhere; color:#666; font-size:11px; }
 
 /* HOME: fotos e vídeos compartilham a mesma moldura, independente do arquivo. */
@@ -1871,19 +1866,6 @@ body { background: #ecebe9; }
 .content-section .preview-post .locked-post > .car-track { position:absolute; inset:0; }
 .content-section .preview-post .locked-post .car-cell { height:100% !important; aspect-ratio:4 / 5 !important; }
 
-/* Confirmação antes de exibir a HOME, inclusive antes do JavaScript carregar. */
-body.age-pending { overflow:hidden; }
-body.age-pending > :not(#ageGate):not(script) { visibility:hidden !important; }
-.age-gate[hidden] { display:none; }
-.age-gate { position:fixed; inset:0; z-index:100000; display:grid; place-items:center; padding:20px; overflow:auto; background:#fff; font-family:Poppins,Arial,sans-serif; color:#293142; }
-.age-gate-card { width:min(100%,380px); text-align:center; border:1px solid #ededed; border-radius:22px; padding:30px 24px 20px; }
-.age-gate-badge { display:inline-grid; place-items:center; width:60px; height:60px; border-radius:50%; background:#fff1e6; color:#ef7623; font-size:23px; font-weight:600; }
-.age-gate h1 { margin:20px 0 12px; font-size:22px; line-height:1.3; }
-.age-gate p { margin:0 0 24px; font-size:14px; line-height:1.6; }
-.age-gate button { width:100%; min-height:48px; border:0; border-radius:26px; font:500 14px Poppins,Arial,sans-serif; cursor:pointer; }
-#ageConfirm { background:linear-gradient(105deg,#ff963f,#fac69f,#f8a598); color:#202020; }
-#ageExit { margin-top:8px; background:none; color:#666; }
-.age-gate button:focus-visible { outline:2px solid #e36a16; outline-offset:3px; }
 
 /* Checkout sem chamada promocional ou perfil duplicado. */
 .checkout-header { justify-content:flex-end; padding:8px 12px 0; border-bottom:0; }
@@ -1897,22 +1879,6 @@ body.age-pending > :not(#ageGate):not(script) { visibility:hidden !important; }
 .checkout-plan-price { flex-shrink:0; font-size:21px; font-weight:600; letter-spacing:-.4px; color:#252936; white-space:nowrap; }
 @media(max-width:359px) { .checkout-plan-info { gap:9px; padding:12px; } .checkout-product-icon { flex-basis:34px; height:38px; } .checkout-plan-price { font-size:19px; } .checkout-plan-label { font-size:14px; } }
 
-/* Compact, collapsed purchase history at the top; never a floating payment modal. */
-.pending-pix-notice { display:block; margin:0 14px 10px; padding:0; border:0; border-bottom:1px solid #eee7e2; border-radius:0; background:transparent; font-size:11px; }
-.pending-pix-notice[hidden] { display:none; }
-.pending-pix-notice summary { cursor:pointer; padding:9px 0; color:#796a60; }
-.pending-pix-row { padding:10px 0; gap:8px; }
-.pending-pix-row > span { flex:1 1 100%; }
-.pending-pix-notice .pending-pix-dismiss { margin-left:auto; padding:8px; min-width:40px; background:transparent; color:#796a60; font-size:22px; }
-
-/* Symmetrical columns keep the wordmark centered independently of the account button. */
-.topbar { display:grid; grid-template-columns:1fr auto 1fr; min-height:62px; gap:4px; }
-.topbar > .logo-text { grid-column:2; grid-row:1; justify-self:center; font-size:22px; }
-.topbar > .member-link { grid-column:3; grid-row:1; justify-self:end; display:flex; align-items:center; gap:5px; padding:8px; border:1px solid #eee8e2; border-radius:18px; color:#5e5148; font-size:10px; }
-.member-link span { padding:0; color:inherit; }
-.member-link:hover { background:#fff7f0; border-color:#f2d9c7; }
-.member-link:focus-visible { outline:2px solid #ff923a; outline-offset:3px; }
-@media(max-width:360px) { .topbar > .member-link { padding:8px 6px; gap:3px; font-size:9px; } }
 
 /* Public derivatives remain protected even with all styles disabled. */
 .locked-post, .preview-post .locked-post, .preview-post:nth-of-type(3n+2) .locked-post, .preview-post:nth-of-type(3n) .locked-post { background:#111; aspect-ratio:4/5; height:auto; }
@@ -1925,32 +1891,56 @@ body.age-pending > :not(#ageGate):not(script) { visibility:hidden !important; }
 .avatar-wrap, .avatar-group .crop-frame { background:#ad9484; }
 
 
-/* ===== Sem barra superior: "Minha conta" flutuando sobre o banner ===== */
-.topbar { display: none !important; }
-.profile-card { margin-top: 10px; }
-.cover-wrap > .member-link {
-  position: absolute; top: 10px; right: 10px; z-index: 3;
-  display: flex; align-items: center; gap: 5px;
-  padding: 7px 12px 7px 9px; border-radius: 999px;
-  background: rgba(24, 18, 15, .42);
-  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, .3);
-  color: #fff; text-decoration: none; white-space: nowrap;
-  font: 600 11px/1 Poppins, Arial, sans-serif;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, .18);
-}
-.cover-wrap > .member-link span { padding: 0; color: #fff; }
-.cover-wrap > .member-link svg { width: 16px; height: 16px; }
-.cover-wrap > .member-link:hover { background: rgba(24, 18, 15, .58); border-color: rgba(255, 255, 255, .45); }
-.cover-wrap > .member-link:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
 
 /* ===== Desconto discreto nos planos de 3 e 6 meses ===== */
 .plans-section .promo-plans-content .btn-plan span:first-child { display: inline-flex; align-items: center; gap: 8px; }
 .plans-section .promo-plans-content .btn-plan .plan-pill { padding: 2px 7px; border-radius: 20px; background: transparent; color: rgba(23, 23, 23, .62); border: 1px solid rgba(23, 23, 23, .22); font: normal 500 9.5px/1.3 Poppins, Arial, sans-serif; letter-spacing: .06em; }
 @media (max-width: 359px) { .plans-section .promo-plans-content .btn-plan span:first-child { gap: 6px; } .plans-section .promo-plans-content .btn-plan .plan-pill { padding: 2px 6px; font-size: 9px; } }
 
-/* Quiet pending PIX reminder and factual expiry actions. */
-.pending-pix-notice:not([hidden]){position:sticky;top:0;z-index:12;background:#fff9f2;box-shadow:0 3px 10px #0000000c}
-#pixExpiry{min-height:1.3em;text-align:center;color:#7b6255;font-size:12px}
-#pixRegenerate{display:block;width:100%;margin:10px 0}#pixSmallerPlan{display:block;width:100%;min-height:40px;border:0;background:transparent;color:#6d554a;cursor:pointer}
-#pushOffer{text-align:center;margin:14px 0}#pushOffer button{border:0;background:transparent;text-decoration:underline;color:#91542f;cursor:pointer}#pushOffer small{display:block}
+/* ===== RODAPÉ COMPACTO ==============================================
+   Fechado são três linhas discretas. Os quatro links e o aviso de 18+/IA
+   continuam na página, dentro de "Informações" — a um toque, sem ocupar
+   meia tela no celular. */
+.home-footer { text-align:center; padding:14px 18px 18px; margin-top:var(--block-gap); background:#fff; border-top:1px solid #f0efee; }
+.trust-row { list-style:none; display:flex; flex-wrap:wrap; justify-content:center; align-items:center; gap:4px 14px; margin:0 0 8px; padding:0; }
+.trust-row li { display:inline-flex; align-items:center; gap:5px; font:400 10px/1.4 Poppins,Arial,sans-serif; color:#a1958c; white-space:nowrap; }
+.trust-row svg { flex:none; width:11px; height:11px; color:#cba57a; }
+.footer-more { margin:0 0 6px; }
+.footer-more > summary { list-style:none; cursor:pointer; display:inline-flex; align-items:center; gap:4px; font:400 10.5px Poppins,Arial,sans-serif; color:#a49a93; }
+.footer-more > summary::-webkit-details-marker { display:none; }
+.footer-more > summary::after { content:""; width:5px; height:5px; border-right:1px solid currentColor; border-bottom:1px solid currentColor; transform:rotate(45deg) translateY(-1px); }
+.footer-more[open] > summary::after { transform:rotate(-135deg) translateY(-1px); }
+.footer-more > summary:hover { color:var(--accent); }
+.footer-links { display:flex; flex-wrap:wrap; justify-content:center; align-items:center; gap:5px; margin:8px 0 6px; }
+.footer-links a { font:400 10.5px Poppins,Arial,sans-serif; color:#8b8b8b; text-decoration:none; }
+.footer-links a:hover { color:var(--accent); }
+.footer-links span { font-size:10px; color:#d4d4d4; }
+.home-footer .footer-fine, .vip-footer .footer-fine { margin:0 auto 4px; max-width:320px; font:400 9.5px/1.6 Poppins,Arial,sans-serif; color:#b2a79f; }
+.home-footer .footer-copy { margin:0; font:400 10.5px Poppins,Arial,sans-serif; color:#a09a95; }
+.home-footer .footer-copy span { color:#d4d4d4; }
+.home-footer .footer-access, .footer-access { font-weight:400; font-size:10.5px; color:var(--accent); text-decoration:none; }
+@media (max-width:360px) {
+  .trust-row { gap:3px 10px; }
+  .trust-row li { font-size:9.5px; }
+}
+
+/* Recuperação de PIX integrada à capa, ao lado de Minha conta. */
+.profile-card { overflow: visible; position: relative; margin-top: 10px; }
+.cover-controls { position:absolute; top:10px; right:10px; z-index:3; display:flex; align-items:center; gap:7px; }
+.cover-controls .member-link { display:flex; align-items:center; gap:5px; padding:7px 12px 7px 9px; border:1px solid #ffffff4d; border-radius:999px; background:#18120f6b; color:#fff; text-decoration:none; white-space:nowrap; font:600 11px/1 Poppins,Arial,sans-serif; box-shadow:0 2px 10px #0003; backdrop-filter:blur(10px); }
+.cover-controls .member-link span { padding:0; color:#fff; }
+.cover-controls .member-link svg { width:16px; height:16px; }
+.cover-controls .member-link:hover { background:#18120f94; border-color:#ffffff73; }
+.cover-controls .member-link:focus-visible { outline:2px solid #fff; outline-offset:2px; }
+.pix-notification-bell { position:relative; display:grid; place-items:center; width:36px; height:36px; padding:0; border:1px solid #ffffff4d; border-radius:50%; background:#18120f6b; color:#fff; backdrop-filter:blur(10px); box-shadow:0 2px 10px #0003; cursor:pointer; }
+.pix-notification-bell svg { width:19px; height:19px; }
+.pix-notification-badge { position:absolute; top:-5px; right:-5px; display:grid; place-items:center; min-width:17px; height:17px; padding:0 4px; border:2px solid #fff; border-radius:12px; background:#f58d3d; color:#fff; font:700 10px/1 Poppins,Arial,sans-serif; }
+.pix-notification-panel { position:absolute; top:52px; right:10px; z-index:30; width:min(284px,calc(100vw - 36px)); padding:14px; border:1px solid #efe2d8; border-radius:15px; background:#fff; box-shadow:0 14px 35px #22150e30; color:#2b3038; font:13px/1.4 Poppins,Arial,sans-serif; }
+.pix-notification-header { display:flex; align-items:center; gap:7px; }
+.pix-notification-header strong { font-size:14px; }
+.pix-notification-header span { font-size:12px; color:#8a6e5b; }
+.pix-notification-close { margin-left:auto; border:0; background:none; color:#766c66; font:20px/1 Arial,sans-serif; cursor:pointer; }
+.pix-notification-detail { margin:8px 0 12px; color:#71675f; font-size:12px; }
+.pix-notification-action { width:100%; min-height:40px; border:0; border-radius:22px; background:linear-gradient(105deg,#ff963f,#fac69f); color:#28232a; font:600 12px Poppins,Arial,sans-serif; cursor:pointer; }
+.pix-notification-bell:focus-visible,.pix-notification-panel button:focus-visible { outline:2px solid #e36a16; outline-offset:2px; }
+.pix-notification-bell[hidden],.pix-notification-panel[hidden],.pix-notification-badge[hidden] { display:none!important; }

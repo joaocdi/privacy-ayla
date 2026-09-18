@@ -769,3 +769,12 @@ body { background: #ecebe9; }
   color: #8d7361;
   text-align: center;
 }
+
+/* Rodapé do VIP: mesma dobra discreta da HOME. */
+.vip-footer .footer-more { margin:6px 0 4px; }
+.vip-footer .footer-more > summary { list-style:none; cursor:pointer; font:400 10.5px Poppins,Arial,sans-serif; color:#a49a93; }
+.vip-footer .footer-more > summary::-webkit-details-marker { display:none; }
+.vip-footer .footer-links { display:flex; flex-wrap:wrap; justify-content:center; gap:5px; margin:8px 0 6px; }
+.vip-footer .footer-links a { font:400 10.5px Poppins,Arial,sans-serif; color:#8b8b8b; text-decoration:none; }
+.vip-footer .footer-links span { font-size:10px; color:#d4d4d4; }
+.vip-footer .footer-copy { margin:0; font:400 10.5px Poppins,Arial,sans-serif; color:#a09a95; }

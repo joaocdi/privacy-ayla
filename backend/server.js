@@ -95,9 +95,9 @@ const accessRateLimit = rateLimit({ windowMs: 60 * 1000, max: 20 });
 // A tela de entrada da criadora e o modo administrador embutido nas páginas
 // entram aqui de propósito: não carregam segredo nenhum, e quem decide se
 // existe sessão de admin é o backend, não estes arquivos.
-const publicFiles = ['push.js','push-sw.js','continue.html','continue.js','analytics.js','fonts.css', 'image-tools.js', 'index.html', 'app.js', 'style.css', 'avatar.jpg', 'cover.jpg', 'verified-ayla.png', 'favicon.ico',
+const publicFiles = ['push.js','push-sw.js','continue.html','continue.js','analytics.js','fonts.css', 'image-tools.js', 'index.html', 'legal.html', 'app.js', 'style.css', 'avatar.jpg', 'cover.jpg', 'verified-ayla.png', 'favicon.ico',
   'vip.html', 'vip.css', 'vip.js',
-  'tips.js','tips.css','pending-checkouts.js','buyer-account.html','buyer-account.css','buyer-account.js','login.html', 'login.css', 'login.js', 'admin-mode.css', 'admin-mode.js', 'admin-loader.js', 'frame.js', 'frame.css', 'carousel.js', 'carousel.css'];
+  'tips.js','tips.css','pending-checkouts.js','pix-notification.js','buyer-account.html','buyer-account.css','buyer-account.js','login.html', 'login.css', 'login.js', 'admin-mode.css', 'admin-mode.js', 'admin-loader.js', 'frame.js', 'frame.css', 'carousel.js', 'carousel.css'];
 app.use('/fonts', express.static(path.join(__dirname, '..', 'fonts'), { index: false, dotfiles: 'deny', maxAge: '1y', immutable: true }));
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, '..', 'index.html')));
 app.get('/continuar', (req,res)=>res.sendFile(path.join(__dirname,'..','continue.html')));
@@ -122,6 +122,7 @@ function accountPage(req,res){
 app.get('/login',accountPage);
 app.get('/meu-acesso',async(req,res,next)=>{try{if(!await buyerAccounts.session(req))return res.redirect(303,'/login');accountPage(req,res);}catch(e){next(e);}});
 app.get(['/criar-acesso','/esqueci-senha','/redefinir-senha'],accountPage);
+app.get(['/termos','/privacidade','/aviso-de-conteudo','/contato'],(req,res)=>res.sendFile(path.join(__dirname,'..','legal.html')));
 app.get('/criadora/login',(req,res)=>res.sendFile(path.join(__dirname,'..','login.html')));
 for (const file of publicFiles) app.get('/' + file, (req, res) => res.sendFile(path.join(__dirname, '..', file)));
 // Only these pre-rendered blurred derivatives are public. No private media paths.

@@ -1,4 +1,4 @@
-// Confirmação de idade por sessão; não concede acesso ao conteúdo VIP.
+// Confirmação local versionada; não concede acesso ao conteúdo VIP.
 let resolveAgeReady;
 window.ageReady = new Promise(resolve => { resolveAgeReady = resolve; });
 (function ageConfirmation() {
@@ -11,16 +11,13 @@ window.ageReady = new Promise(resolve => { resolveAgeReady = resolve; });
     document.body.classList.remove('age-pending');
     resolveAgeReady();
   }
-  // A tela 18+ já pode ter sido confirmada pelo script embutido no HTML
-  // (ele responde antes deste arquivo chegar). sessionStorage pode estar
-  // bloqueado, então a marca global também vale.
+  // O HTML já verifica o armazenamento antes do carregamento deste script.
   let confirmed = window.__ageOk === true;
-  try { confirmed = confirmed || sessionStorage.getItem('ayla.age.confirmed') === 'yes'; } catch (_) {}
+  try { const saved = JSON.parse(localStorage.getItem('ayla.age_gate_confirmed_v1')); confirmed = confirmed || (saved?.accepted === true && Number.isFinite(saved.acceptedAt)); } catch (_) {}
   if (confirmed) enter();
   else document.getElementById('ageConfirm').focus();
   document.getElementById('ageConfirm').addEventListener('click', () => {
-    try { sessionStorage.setItem('ayla.age.confirmed', 'yes'); } catch (_) {}
-    enter(); document.querySelector('.logo-text')?.focus();
+    enter();
   });
   document.getElementById('ageExit').addEventListener('click', () => window.location.replace('about:blank'));
   gate.addEventListener('keydown', event => {
@@ -381,7 +378,7 @@ async function pendingPixStatus(pending) {
   const response = await fetch(API_BASE + '/api/orders/' + encodeURIComponent(pending.payment.orderId) + '/status', {
     headers: { Authorization: 'Bearer ' + pending.token }, signal: AbortSignal.timeout(10000)
   });
-  if (!response.ok) throw new Error('Não foi possível consultar o pagamento agora.');
+  if (!response.ok) throw Object.assign(new Error('Não foi possível consultar o pagamento agora.'), { status: response.status });
   return response.json();
 }
 function openPaidAccount(pending, needsClaim) {
@@ -389,83 +386,31 @@ function openPaidAccount(pending, needsClaim) {
   else AylaCheckouts.remove(pending);
   location.assign(needsClaim ? '/criar-acesso?order=' + encodeURIComponent(pending.payment.orderId) : '/meu-acesso');
 }
-let pixTimer=null;const pendingSeen=new Set();const priorPending=new Set((window.AylaCheckouts?.list()||[]).map(x=>x.payment?.orderId).filter(Boolean));
-function startPixTimer(expiresAt,version,token){clearInterval(pixTimer);const target=document.getElementById('pixExpiry');const ms=expiresAt?Date.parse(String(expiresAt).replace(' ','T')+(String(expiresAt).includes('Z')?'':'Z')):NaN;
- if(!Number.isFinite(ms)){target.textContent='Prazo não informado pela operadora';return;}
- const tick=()=>{if(version!==checkoutVersion){clearInterval(pixTimer);return;}const left=Math.max(0,Math.ceil((ms-Date.now())/1000));target.textContent=left?('Tempo restante: '+String(Math.floor(left/60)).padStart(2,'0')+':'+String(left%60).padStart(2,'0')):'Prazo encerrado';if(!left){clearInterval(pixTimer);window.FunnelAnalytics?.track('pix_expired',selectedProduct,currentOrderId);showRegenerate(true,selectedProduct);}};tick();pixTimer=setInterval(tick,1000);
-}
-function showRegenerate(enabled,productId){const fresh=document.getElementById('pixRegenerate'),small=document.getElementById('pixSmallerPlan');if(!fresh)return;fresh.hidden=!enabled;small.hidden=!enabled||['monthly','ayla_monthly','whatsapp_unlock','ayla_whatsapp_unlock'].includes(productId);fresh.onclick=()=>location.assign('/continuar?order='+encodeURIComponent(currentOrderId)+'&regen=1');small.onclick=()=>location.assign('/continuar?order='+encodeURIComponent(currentOrderId)+'&smaller=1');}
-let pendingNoticeVersion = 0;
-let pendingNoticeTimer = null;
-function updatePendingNoticeCountdown() {
-  clearInterval(pendingNoticeTimer);
-  const nodes = [...document.querySelectorAll('[data-pix-expires]')];
-  if (!nodes.length) return;
+let pixTimer = null;
+function startPixTimer(expiresAt, version) {
+  clearInterval(pixTimer);
+  const target = document.getElementById('pixExpiry');
+  if (!target) return;
+  const raw = expiresAt ? String(expiresAt).replace(' ', 'T') : '';
+  const ms = raw ? Date.parse(raw + (/[zZ]|[+-]\d\d:?\d\d$/.test(raw) ? '' : 'Z')) : NaN;
+  if (!Number.isFinite(ms)) { target.hidden = true; target.textContent = ''; return; }
+  target.hidden = false;
   const tick = () => {
-    let finished = false;
-    for (const node of nodes) {
-      const seconds = Math.max(0, Math.ceil((Number(node.dataset.pixExpires) - Date.now()) / 1000));
-      node.textContent = seconds ? 'Restam ' + String(Math.floor(seconds / 60)).padStart(2, '0') + ':' + String(seconds % 60).padStart(2, '0') : 'Prazo encerrado';
-      if (!seconds) finished = true;
-    }
-    if (finished) { clearInterval(pendingNoticeTimer); refreshPendingPixNotice(); }
+    if (version !== checkoutVersion) { clearInterval(pixTimer); return; }
+    const left = Math.max(0, Math.ceil((ms - Date.now()) / 1000));
+    target.textContent = left ? 'Tempo restante: ' + String(Math.floor(left / 60)).padStart(2, '0') + ':' + String(left % 60).padStart(2, '0') : 'Prazo encerrado';
+    if (!left) { clearInterval(pixTimer); window.FunnelAnalytics?.track('pix_expired', selectedProduct, currentOrderId); showRegenerate(true, selectedProduct); }
   };
-  tick();
-  if (!nodes.some(node => Date.now() >= Number(node.dataset.pixExpires))) pendingNoticeTimer = setInterval(tick, 1000);
+  tick(); if (ms > Date.now()) pixTimer = setInterval(tick, 1000);
 }
-async function refreshPendingPixNotice() {
-  const notice = document.getElementById('pendingPixNotice');
-  const version = ++pendingNoticeVersion;
-  const items = AylaCheckouts.list();
-  if (!items.length) { notice.hidden = true; notice.replaceChildren(); return; }
-  const states = await Promise.all(items.map(async item => {
-    try { return { item, state: item.payment?.orderId ? await pendingPixStatus(item) : { status: 'CREATING' } }; }
-    catch (_) { return { item, state: { status: 'UNKNOWN' } }; }
-  }));
-  if (version !== pendingNoticeVersion) return;
-  const wasOpen = notice.open;
-  notice.replaceChildren();
-  const summary = document.createElement('summary');
-  summary.textContent = 'Compras recentes'; notice.append(summary);
-  notice.open = wasOpen || location.hash === '#pendingPixNotice' || states.some(({state})=>state.status==='PENDING');
-  const labels = { ayla_monthly: '1 mês', ayla_quarterly: '3 meses', ayla_semester: '6 meses', ayla_whatsapp_unlock: 'Contato WhatsApp' };
-  for (const { item, state } of states) {
-    if (!AylaCheckouts.list().some(saved => saved.token === item.token)) continue;
-    if (state.status === 'PAID' && state.accountFlow && !state.needsClaim) { AylaCheckouts.remove(item); continue; }
-    const paid = state.status === 'PAID';
-    const showAll = location.hash === '#pendingPixNotice';
-    const age = Date.now() - Number(item.createdAt || 0);
-    if (!showAll && item.noticeDismissedAt && (!paid || item.noticeDismissedPaid)) continue;
-    const row = document.createElement('div'); row.className = 'pending-pix-row';
-    const text = document.createElement('span'), button = document.createElement('button'); button.type = 'button';
-    if (notice.children.length === 1) { text.id = 'pendingPixText'; button.id = 'pendingPixContinue'; }
-    let label = 'Compra em andamento';
-    button.textContent = 'Retomar compra';
-    button.onclick = () => item.payment?.orderId ? location.assign('/continuar?order='+encodeURIComponent(item.payment.orderId)) : openCheckout(item.productId,item.token);
-    if (state.status === 'PENDING') { label = 'Você tem um PIX pendente'; button.textContent = 'Continuar pagamento'; }
-    else if (state.status === 'PAID' && state.accountFlow) {
-      label = 'Pagamento confirmado'; button.textContent = 'Criar meu acesso';
-      button.onclick = () => openPaidAccount(item, true);
-    } else if (state.requiresReview) { label = 'Pedido em verificação'; button.textContent = 'Verificar pedido'; }
-    else if (['EXPIRED','CANCELED'].includes(state.status)) { label = 'Prazo do PIX encerrado'; button.textContent = 'Conferir pedido'; }
-    text.textContent = label + ' · ' + labels[item.productId] + (Number.isFinite(Number(state.amount))?' · '+Number(state.amount).toLocaleString('pt-BR',{style:'currency',currency:'BRL'}):'');if(state.status==='EXPIRED')window.FunnelAnalytics?.track('pix_expired',item.productId,item.payment?.orderId);if(state.status==='PENDING'&&item.payment?.orderId&&priorPending.has(item.payment.orderId)&&!pendingSeen.has(item.payment.orderId)){pendingSeen.add(item.payment.orderId);window.FunnelAnalytics?.track('pix_pending_return',item.productId,item.payment.orderId);}
-    const dismiss = document.createElement('button'); dismiss.type = 'button'; dismiss.className = 'pending-pix-dismiss';
-    dismiss.textContent = '×'; dismiss.setAttribute('aria-label', 'Dispensar aviso de ' + labels[item.productId]);
-    dismiss.onclick = () => { AylaCheckouts.save({ ...item, noticeDismissedAt: Date.now(), noticeDismissedPaid: paid }); refreshPendingPixNotice(); };
-    row.append(text);
-    if (state.status === 'PENDING') {
-      const countdown = document.createElement('small');
-      const expiry = state.expiresAt ? Date.parse(String(state.expiresAt).replace(' ', 'T') + 'Z') : NaN;
-      if (Number.isFinite(expiry)) countdown.dataset.pixExpires = String(expiry);
-      else countdown.textContent = 'Prazo não informado pela operadora';
-      row.append(countdown);
-    }
-    row.append(button, dismiss); notice.append(row);
-  }
-  notice.hidden = notice.children.length <= 1;
-  summary.textContent = notice.children.length===2 && states.some(({state})=>state.status==='PENDING')?'PIX pendente · Continuar pagamento':'Compras recentes (' + (notice.children.length - 1) + ')';
-  updatePendingNoticeCountdown();
+function showRegenerate(enabled, productId) {
+  const fresh = document.getElementById('pixRegenerate'), small = document.getElementById('pixSmallerPlan');
+  if (!fresh) return;
+  fresh.hidden = !enabled; small.hidden = !enabled || ['monthly','ayla_monthly','whatsapp_unlock','ayla_whatsapp_unlock'].includes(productId);
+  fresh.onclick = () => location.assign('/continuar?order=' + encodeURIComponent(currentOrderId) + '&regen=1');
+  small.onclick = () => location.assign('/continuar?order=' + encodeURIComponent(currentOrderId) + '&smaller=1');
 }
+async function refreshPendingPixNotice() { return window.PixNotifications?.refresh(); }
 function checkoutError(message, retry, reference = null) {
   const loading = document.getElementById('pixLoadingState');
   loading.replaceChildren(); loading.style.display = 'flex';
@@ -479,7 +424,11 @@ function checkoutError(message, retry, reference = null) {
   }
 }
 async function openCheckout(productId, resumeToken = null) {
-  if(!resumeToken){window.FunnelAnalytics?.track('plan_selected',productId);if(productId.includes('monthly')||productId.includes('quarterly')||productId.includes('semester'))window.FunnelAnalytics?.track('subscription_cta_click',productId);window.FunnelAnalytics?.track('checkout_started',productId);}
+  if (!resumeToken) {
+    window.FunnelAnalytics?.track('plan_selected', productId);
+    if (/(monthly|quarterly|semester)/.test(productId)) window.FunnelAnalytics?.track('subscription_cta_click', productId);
+    window.FunnelAnalytics?.track('checkout_started', productId);
+  }
   closeCheckout();
   const version = checkoutVersion;
   selectedProduct = PRODUCT_ALIASES[productId] || productId;
@@ -488,6 +437,8 @@ async function openCheckout(productId, resumeToken = null) {
   currentOrderId = null;
   openModal('checkoutModalOverlay');
   document.getElementById('pixActiveArea').style.display = 'none';
+  const consentimento = document.getElementById('checkoutConsent');
+  if (consentimento) consentimento.hidden = false;
 
   document.getElementById('pixStatusContainer').classList.remove('paid');
   document.getElementById('checkoutPlanLabel').textContent = 'Carregando...';
@@ -514,7 +465,10 @@ async function openCheckout(productId, resumeToken = null) {
           : 'Este PIX não está mais pendente. Se você pagou, aguarde a confirmação antes de fazer outro pagamento.', null, pending.payment.orderId);
         return;
       }
-      if (status.status === 'PENDING') { const fresh=await fetch(API_BASE+'/api/orders/'+encodeURIComponent(pending.payment.orderId)+'/pix',{headers:{Authorization:'Bearer '+pending.token},signal:AbortSignal.timeout(10000)});if(fresh.ok){showBuyerPix(await fresh.json(),version,pending.token);return;} }
+      if (status.status === 'PENDING') {
+        const fresh = await fetch(API_BASE + '/api/orders/' + encodeURIComponent(pending.payment.orderId) + '/pix', { headers: { Authorization: 'Bearer ' + pending.token }, signal: AbortSignal.timeout(10000) });
+        if (fresh.ok) { showBuyerPix(await fresh.json(), version, pending.token); return; }
+      }
     }
     fetch(API_BASE+'/api/conversions/checkout',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({productId:selectedProduct,checkoutToken:currentCheckoutToken}),signal:AbortSignal.timeout(5000)}).catch(()=>{});
     await createCheckoutPix(version);
@@ -591,12 +545,17 @@ function showBuyerPix(data,version,token){
     const qr = document.getElementById('pixQrImage'); qr.src = data.pix.qrCode; qr.style.display = 'block';
     document.getElementById('pixLoadingState').style.display = 'none';
     document.getElementById('pixActiveArea').style.display = 'block';
-    const copy = document.getElementById('btnCopyPix'); copy.disabled = false; copy.textContent = 'COPIAR PIX'; copy.classList.remove('copied');
+    // Tela do PIX fica limpa: o aviso já foi dado antes de gerar.
+    const aviso = document.getElementById('checkoutConsent');
+    if (aviso) aviso.hidden = true;
+    const copy = document.getElementById('btnCopyPix'); copy.disabled = false; copy.textContent = 'COPIAR CÓDIGO PIX'; copy.classList.remove('copied');
     document.getElementById('pixMockNotice').hidden = !data.mock;
     const stagingButton=document.getElementById('stagingConfirm');stagingButton.hidden=!data.staging;
     if(data.staging){const btn=stagingButton;btn.disabled=false;btn.textContent='SIMULAR PAGAMENTO — STAGING';btn.onclick=async()=>{btn.disabled=true;try{const r=await fetch('/api/staging/confirm',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({orderId:data.orderId,claimToken:token})});if(!r.ok)throw Error();}catch(_){btn.disabled=false;btn.textContent='Tentar simulação novamente';}};}
     document.getElementById('pixStatusMessage').textContent = 'Aguardando pagamento... não precisa atualizar';
-    startPixTimer(data.expiresAt,version,token);window.showPushOffer?.();window.FunnelAnalytics?.track('pix_qr_viewed',selectedProduct,data.orderId);
+    startPixTimer(data.expiresAt, version);
+    window.showPushOffer?.();
+    window.FunnelAnalytics?.track('pix_qr_viewed', selectedProduct, data.orderId);
     startPaymentStatusPolling(data.orderId, version, token);
 }
 function startPaymentStatusPolling(orderId, version, token) {
@@ -619,7 +578,10 @@ function startPaymentStatusPolling(orderId, version, token) {
         // Keep the claim: a delayed valid webhook may still confirm this order.
         message.textContent = data.requiresReview ? 'Pedido em verificação. Não faça outro pagamento.' : 'PIX indisponível. Se você pagou, aguarde a confirmação.';
         document.getElementById('btnCopyPix').disabled = true;
-        currentPollingInterval = null;if(data.status==='EXPIRED')window.FunnelAnalytics?.track('pix_expired',selectedProduct,orderId);showRegenerate(data.status==='EXPIRED'||data.status==='CANCELED',selectedProduct);refreshPendingPixNotice(); return;
+        currentPollingInterval = null;
+        if (data.status === 'EXPIRED') window.FunnelAnalytics?.track('pix_expired', selectedProduct, orderId);
+        showRegenerate(data.status === 'EXPIRED' || data.status === 'CANCELED', selectedProduct);
+        refreshPendingPixNotice(); return;
       }
       message.textContent = 'Aguardando pagamento... não precisa atualizar';
     } catch (_) {
@@ -633,7 +595,7 @@ function startPaymentStatusPolling(orderId, version, token) {
 function closeCheckout() {
   checkoutVersion++; checkoutBusy = false;
   clearTimeout(currentCreationTimer); currentCreationTimer = null;
-  clearTimeout(currentPollingInterval); currentPollingInterval = null;clearInterval(pixTimer);pixTimer=null;
+  clearTimeout(currentPollingInterval); currentPollingInterval = null; clearInterval(pixTimer); pixTimer = null;
   closeModal('checkoutModalOverlay');
 }
 document.addEventListener('keydown', event => { if (event.key === 'Escape') closeCheckout(); });
@@ -716,6 +678,7 @@ document.addEventListener('click', event => {
 
   let rendered = 0;
   let total = 0;
+  let nextOffset = 0;
   let carregando = false;
   let sentinela = null;
 
@@ -761,22 +724,14 @@ document.addEventListener('click', event => {
       const safe = Array.isArray(item.items) ? item.items.filter(isSafePreviewItem) : [];
       if (safe.length > 1) mountLockedCarousel(locked, overlay, safe, item.teaserSeconds);
       fragment.append(header, locked);
-      usados.push(item);
-    });
-    return { fragment, usados };
-  }
-
-  function decorar(usados) {
-    const cards = [...document.querySelectorAll('.locked-post')];
-    usados.forEach((item, index) => {
-      const post = cards[rendered + index];
-      if (!post) return;
-      decorateLockedPost(post, {
+      decorateLockedPost(locked, {
         id: item.id, likes_count: item.likes_count,
         type: item.type === 'video' ? 'video' : 'image',
         caption: item.caption || HOME_CAPTIONS[(rendered + index) % HOME_CAPTIONS.length]
       });
+      usados.push(item);
     });
+    return { fragment, usados };
   }
 
   async function pagina(offset) {
@@ -785,6 +740,7 @@ document.addEventListener('click', event => {
     try {
       const data = await buscar(offset);
       total = data.total || data.previews.length;
+      nextOffset = data.previews.length ? offset + data.previews.length : total;
       if (offset === 0 && data.previews.length === 0) {
         if (data.managed) existing.forEach(post => post.remove());
         return;
@@ -792,24 +748,23 @@ document.addEventListener('click', event => {
       const { fragment, usados } = montar(data.previews);
       if (!fragment.childNodes.length) return;
       if (offset === 0) { existing.forEach(article => article.remove()); anchor.after(fragment); }
-      else { (sentinela || [...document.querySelectorAll('.locked-post')].pop())?.before(fragment); }
-      decorar(usados);
+      else sentinela?.before(fragment);
       rendered += usados.length;
     } finally { carregando = false; }
   }
 
   await pagina(0).catch(() => {});
-  if (!rendered || rendered >= total) return;
+  if (!rendered || nextOffset >= total) return;
 
   // Próxima página só quando o visitante chega perto do fim do que já existe.
   sentinela = document.createElement('div');
   sentinela.className = 'feed-sentinela';
   sentinela.setAttribute('aria-hidden', 'true');
-  [...document.querySelectorAll('.locked-post')].pop()?.after(sentinela);
+  [...document.querySelectorAll('.preview-post')].pop()?.after(sentinela);
   const observer = new IntersectionObserver(async entries => {
     if (!entries.some(entry => entry.isIntersecting) || carregando) return;
-    await pagina(rendered).catch(() => {});
-    if (rendered >= total) { observer.disconnect(); sentinela.remove(); }
+    await pagina(nextOffset).catch(() => {});
+    if (nextOffset >= total) { observer.disconnect(); sentinela.remove(); }
   }, { rootMargin: '600px 0px' });
   observer.observe(sentinela);
 })();
@@ -823,17 +778,17 @@ document.getElementById('btnCopyPix')?.addEventListener('click', async () => {
   const input = document.getElementById('pixCodeInput');
   if (input && input.value) {
     try {
-      await navigator.clipboard.writeText(input.value);window.FunnelAnalytics?.track('pix_copied',selectedProduct,currentOrderId);
+      await navigator.clipboard.writeText(input.value); window.FunnelAnalytics?.track('pix_copied', selectedProduct, currentOrderId);
     } catch (e) {
       input.select();
-      if(document.execCommand('copy'))window.FunnelAnalytics?.track('pix_copied',selectedProduct,currentOrderId);
+      if (document.execCommand('copy')) window.FunnelAnalytics?.track('pix_copied', selectedProduct, currentOrderId);
     }
     const btn = document.getElementById('btnCopyPix');
     if (btn) {
       btn.textContent = 'Copiado! ✓';
       btn.classList.add('copied');
       setTimeout(() => {
-        btn.textContent = 'COPIAR PIX';
+        btn.textContent = 'COPIAR CÓDIGO PIX';
         btn.classList.remove('copied');
       }, 2500);
     }
@@ -933,9 +888,11 @@ else {
     }
   }
 }
-window.ageReady.then(refreshPendingPixNotice);
+window.ageReady.then(async () => {
+  await refreshPendingPixNotice();
+  if (location.hash === '#pixNotificationBell' && !document.getElementById('pixNotificationBell').hidden) document.getElementById('pixNotificationBell').click();
+});
 window.addEventListener('storage', event => { if (event.key?.startsWith(AylaCheckouts.prefix)) refreshPendingPixNotice(); });
-window.addEventListener('focus', refreshPendingPixNotice);
 
 
 // Contato pago: usa o checkout existente e uma credencial separada do VIP.
@@ -1010,5 +967,7 @@ document.getElementById('contactReply').addEventListener('submit', e => {
 });
 for (const id of ['contactUnlockClose','contactUnlockLater']) document.getElementById(id).addEventListener('click', () => closeModal('contactUnlockModal'));
 
-window.addEventListener('hashchange', refreshPendingPixNotice);
-setInterval(() => { if (!document.hidden) refreshPendingPixNotice(); }, 60000);
+window.addEventListener('hashchange', async () => {
+  await refreshPendingPixNotice();
+  if (location.hash === '#pixNotificationBell' && !document.getElementById('pixNotificationBell').hidden) document.getElementById('pixNotificationBell').click();
+});

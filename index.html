@@ -16,6 +16,7 @@
   .age-gate button{width:100%;min-height:48px;border:0;border-radius:26px;font:500 14px Poppins,Arial,sans-serif;cursor:pointer}
   #ageConfirm{background:linear-gradient(105deg,#ff963f,#fac69f,#f8a598);color:#202020}
   #ageExit{margin-top:8px;background:none;color:#666}
+  .age-gate button:focus-visible{outline:2px solid #e36a16;outline-offset:2px}
   </style>
   <link rel="preload" as="fetch" href="/api/profile" crossorigin>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -51,19 +52,18 @@
  </div>
 </section>
 <script>
-/* Confirmação já funciona antes do app.js chegar; o app.js reconfirma depois
-   pelo sessionStorage, então clicar duas vezes não muda nada. */
 (function(){var g=document.getElementById('ageGate'),ok=document.getElementById('ageConfirm');
+var key='ayla.age_gate_confirmed_v1';
+function aceito(){try{var v=JSON.parse(localStorage.getItem(key));return v&&v.accepted===true&&Number.isFinite(v.acceptedAt);}catch(e){return false;}}
 function entrar(){window.__ageOk=true;g.hidden=true;document.body.classList.remove('age-pending');}
-try{if(sessionStorage.getItem('ayla.age.confirmed')==='yes')entrar();}catch(e){}
-ok.addEventListener('click',function(){try{sessionStorage.setItem('ayla.age.confirmed','yes');}catch(e){}entrar();});
+if(aceito())entrar();
+ok.addEventListener('click',function(){if(!aceito()){try{localStorage.setItem(key,JSON.stringify({accepted:true,acceptedAt:Date.now()}));}catch(e){}if(window.FunnelAnalytics)window.FunnelAnalytics.track('age_gate_confirm');else window.__ageConfirmedNow=true;}entrar();});
 document.getElementById('ageExit').addEventListener('click',function(){window.location.replace('about:blank');});})();
 </script>
 
 <!-- ===== MOBILE WRAPPER ===== -->
 <div class="mobile-frame" id="mobileFrame">
 
-  <details class="pending-pix-notice" id="pendingPixNotice" hidden aria-label="Compras recentes"></details>
 
   <!-- ===== CARTÃO DE PERFIL =====
        Bloco 1 de 4. Capa, avatar, números, identificação, bio e os botões de
@@ -75,8 +75,12 @@ document.getElementById('ageExit').addEventListener('click',function(){window.lo
     <div class="cover-wrap">
       <img  alt="Foto de capa" class="cover-img" id="coverImg" fetchpriority="high" decoding="async" width="1280" height="525" />
       <span class="cover-note">mais perto, mais eu.</span>
-      <a class="member-link" data-buyer-access href="/meu-acesso"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="12" cy="8" r="3.3"/><path d="M5.5 20v-1.5a6.5 6.5 0 0 1 13 0V20"/></svg><span>Minha conta</span></a>
+      <div class="cover-controls">
+        <button id="pixNotificationBell" class="pix-notification-bell" type="button" hidden aria-label="Notificações" aria-expanded="false" aria-controls="pixNotificationPanel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/></svg><span id="pixNotificationBadge" class="pix-notification-badge" hidden>1</span></button>
+        <a class="member-link" data-buyer-access href="/meu-acesso"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="12" cy="8" r="3.3"/><path d="M5.5 20v-1.5a6.5 6.5 0 0 1 13 0V20"/></svg><span>Minha conta</span></a>
+      </div>
     </div>
+    <div id="pixNotificationPanel" class="pix-notification-panel" hidden></div>
 
     <!-- Avatar + Stats row -->
     <div class="avatar-row">
@@ -349,8 +353,21 @@ document.getElementById('ageExit').addEventListener('click',function(){window.lo
     </div>
   </section>
 
-  <!-- Rodapé enxuto: só o aviso legal e o atalho para quem já assinou. -->
-  <footer class="home-footer"><p>Conteúdo exclusivo para maiores de 18 anos.</p><a data-buyer-access href="/meu-acesso">Já assinou? Meu acesso</a></footer>
+  <!-- Rodapé compacto: selos + uma dobra "Informações". Fechado, ocupa três
+       linhas; o texto legal continua na página, só não grita. -->
+  <footer class="home-footer">
+    <ul class="trust-row">
+      <li><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4.5" y="10.5" width="15" height="10" rx="2.5"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg><span>Checkout seguro</span></li>
+      <li><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="m8.5 12.2 2.4 2.4 4.6-5"/></svg><span>Liberação após confirmação</span></li>
+      <li><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12s3.2-5 8-5 8 5 8 5-3.2 5-8 5-8-5-8-5Z"/><circle cx="12" cy="12" r="2.1"/><path d="m4.5 19.5 15-15"/></svg><span>Conteúdo privado</span></li>
+    </ul>
+    <details class="footer-more">
+      <summary>Informações</summary>
+      <nav class="footer-links" aria-label="Informações"><a href="/termos">Termos de Uso</a><span aria-hidden="true">·</span><a href="/privacidade">Privacidade</a><span aria-hidden="true">·</span><a href="/aviso-de-conteudo">Aviso de Conteúdo</a><span aria-hidden="true">·</span><a href="/contato">Contato</a></nav>
+      <p class="footer-fine">Conteúdo digital 18+. Este serviço pode utilizar recursos de inteligência artificial e automação.</p>
+    </details>
+    <p class="footer-copy">© 2026 Ayla <span aria-hidden="true">·</span> 18+ <span aria-hidden="true">·</span> <a class="footer-access" data-buyer-access href="/meu-acesso">Meu acesso</a></p>
+  </footer>
 </div><!-- end mobile-frame -->
 
 
@@ -367,6 +384,7 @@ document.getElementById('ageExit').addEventListener('click',function(){window.lo
       <div class="checkout-plan-info" id="checkoutPlanInfo">
         <span class="checkout-product-icon" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="3"/><path d="m8 12 3 3 5-6"/></svg></span>
         <div class="checkout-product-description"><span class="checkout-summary-label">Você selecionou</span><span class="checkout-plan-label" id="checkoutPlanLabel">1 mês</span></div>
+      <p class="checkout-consent" id="checkoutConsent">Ao gerar o PIX, você confirma ser maior de 18 anos e concorda com os <a href="/termos" target="_blank" rel="noopener">Termos de Uso</a>.</p>
         <span class="checkout-plan-price" id="checkoutPlanPrice">R$ 9,90</span>
       </div>
 
@@ -389,11 +407,11 @@ document.getElementById('ageExit').addEventListener('click',function(){window.lo
           <label class="pix-copypaste-title">PIX copia e cola</label>
           <div class="pix-copypaste-input-wrap">
             <input type="text" id="pixCodeInput" class="pix-copypaste-field" readonly />
-            <button type="button" class="pix-btn-copy" id="btnCopyPix">COPIAR PIX</button>
+            <button type="button" class="pix-btn-copy" id="btnCopyPix">COPIAR CÓDIGO PIX</button>
           </div>
         </div>
 
-        <ol class="buyer-pix-steps"><li>Toque em “Copiar PIX”.</li><li>Abra o aplicativo do seu banco.</li><li>Escolha Pix → Copia e Cola.</li><li>Cole o código e confirme o pagamento.</li></ol><p class="checkout-note">Não precisa atualizar esta página.</p>
+        <ol class="buyer-pix-steps"><li>Toque em “Copiar código Pix”.</li><li>Abra o aplicativo do seu banco.</li><li>Escolha Pix → Copia e Cola.</li><li>Cole o código e confirme o pagamento.</li></ol><p class="checkout-note">Não precisa atualizar esta página.</p>
         <div class="pix-status-container" id="pixStatusContainer">
           <span class="pix-status-indicator"></span>
           <span class="pix-status-message" id="pixStatusMessage" role="status" aria-live="polite">Aguardando pagamento...</span>
@@ -429,6 +447,7 @@ document.getElementById('ageExit').addEventListener('click',function(){window.lo
 <script defer src="/analytics.js"></script>
 <script defer src="/push.js"></script>
 <script defer src="/pending-checkouts.js"></script>
+<script defer src="/pix-notification.js"></script>
 <script defer src="app.js?v=carousel-1"></script>
 <script defer src="/admin-loader.js?v=1"></script>
 
