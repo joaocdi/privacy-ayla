@@ -6,7 +6,7 @@ const profile = {
   // Base histórica do perfil: o que já existia antes deste site. É SOMADA ao
   // conteúdo real publicado pelo painel (nada fica fixo no frontend). Mexer
   // aqui é o único lugar para ajustar os números exibidos.
-  stats: { posts: 138, photos: 69, videos: 124, likes: '23100' }
+  stats: { posts: 64, photos: 31, videos: 61, likes: '23100' }
 };
 // Feed legado VAZIO de propósito: a Ayla publica pelo painel da criadora.
 // Vaga de placeholder aqui viraria post no banco e card quebrado no site.

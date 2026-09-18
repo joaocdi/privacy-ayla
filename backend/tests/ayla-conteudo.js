@@ -93,7 +93,7 @@ async function seedPost(db, { id, published, type = 'image', likes = 0 }) {
       videos: numero(cfg.videos) + 1,
       likes: numero(cfg.likes) + 27401
     }, 'base histórica + publicado, somando curtidas reais');
-    assert.ok(numero(cfg.likes) >= 23000 && numero(cfg.posts) >= 100,
+    assert.ok(numero(cfg.likes) >= 23000 && numero(cfg.posts) > 0,
       'base histórica configurada deixa o perfil acima de 28K curtidas com as curtidas reais');
     const perfil = await (await fetch(base + '/api/profile')).json();
     assert.deepEqual(perfil.stats, stats, '/api/profile entrega os mesmos números');

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR" data-creator="ayla">
+<html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
   <style>html{background:#f4f3f1}</style>
@@ -16,7 +16,6 @@
   .age-gate button{width:100%;min-height:48px;border:0;border-radius:26px;font:500 14px Poppins,Arial,sans-serif;cursor:pointer}
   #ageConfirm{background:linear-gradient(105deg,#ff963f,#fac69f,#f8a598);color:#202020}
   #ageExit{margin-top:8px;background:none;color:#666}
-  .age-gate button:focus-visible{outline:2px solid #e36a16;outline-offset:2px}
   </style>
   <link rel="preload" as="fetch" href="/api/profile" crossorigin>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -52,18 +51,19 @@
  </div>
 </section>
 <script>
+/* Confirmação já funciona antes do app.js chegar; o app.js reconfirma depois
+   pelo sessionStorage, então clicar duas vezes não muda nada. */
 (function(){var g=document.getElementById('ageGate'),ok=document.getElementById('ageConfirm');
-var key='ayla.age_gate_confirmed_v1';
-function aceito(){try{var v=JSON.parse(localStorage.getItem(key));return v&&v.accepted===true&&Number.isFinite(v.acceptedAt);}catch(e){return false;}}
 function entrar(){window.__ageOk=true;g.hidden=true;document.body.classList.remove('age-pending');}
-if(aceito())entrar();
-ok.addEventListener('click',function(){if(!aceito()){try{localStorage.setItem(key,JSON.stringify({accepted:true,acceptedAt:Date.now()}));}catch(e){}if(window.FunnelAnalytics)window.FunnelAnalytics.track('age_gate_confirm');else window.__ageConfirmedNow=true;}entrar();});
+try{if(sessionStorage.getItem('ayla.age.confirmed')==='yes')entrar();}catch(e){}
+ok.addEventListener('click',function(){try{sessionStorage.setItem('ayla.age.confirmed','yes');}catch(e){}entrar();});
 document.getElementById('ageExit').addEventListener('click',function(){window.location.replace('about:blank');});})();
 </script>
 
 <!-- ===== MOBILE WRAPPER ===== -->
 <div class="mobile-frame" id="mobileFrame">
 
+  <details class="pending-pix-notice" id="pendingPixNotice" hidden aria-label="Compras recentes"></details>
 
   <!-- ===== CARTÃO DE PERFIL =====
        Bloco 1 de 4. Capa, avatar, números, identificação, bio e os botões de
@@ -75,12 +75,8 @@ document.getElementById('ageExit').addEventListener('click',function(){window.lo
     <div class="cover-wrap">
       <img  alt="Foto de capa" class="cover-img" id="coverImg" fetchpriority="high" decoding="async" width="1280" height="525" />
       <span class="cover-note">mais perto, mais eu.</span>
-      <div class="cover-controls">
-        <button id="pixNotificationBell" class="pix-notification-bell" type="button" hidden aria-label="Notificações" aria-expanded="false" aria-controls="pixNotificationPanel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/></svg><span id="pixNotificationBadge" class="pix-notification-badge" hidden>1</span></button>
-        <a class="member-link" data-buyer-access href="/meu-acesso"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="12" cy="8" r="3.3"/><path d="M5.5 20v-1.5a6.5 6.5 0 0 1 13 0V20"/></svg><span>Minha conta</span></a>
-      </div>
+      <a class="member-link" data-buyer-access href="/meu-acesso"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="12" cy="8" r="3.3"/><path d="M5.5 20v-1.5a6.5 6.5 0 0 1 13 0V20"/></svg><span>Minha conta</span></a>
     </div>
-    <div id="pixNotificationPanel" class="pix-notification-panel" hidden></div>
 
     <!-- Avatar + Stats row -->
     <div class="avatar-row">
@@ -146,7 +142,7 @@ document.getElementById('ageExit').addEventListener('click',function(){window.lo
   <section class="offer-card" id="offerCard">
     <h2 class="offer-title">
       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.2l1.9 4.9 4.9 1.9-4.9 1.9L12 16.8l-1.9-4.9L5.2 10l4.9-1.9z"/><path d="M18.5 16.2l.7 1.8 1.8.7-1.8.7-.7 1.8-.7-1.8-1.8-.7 1.8-.7z"/></svg>
-      Assinatura mensal
+      Oferta de assinatura
     </h2>
 <div class="offer-cta">
 <button class="btn-plan primary-plan" id="btnPlan1m">
@@ -398,7 +394,7 @@ document.getElementById('ageExit').addEventListener('click',function(){window.lo
       <div id="pixActiveArea" style="display:none;">
         <p id="pixMockNotice" class="checkout-note" hidden>Modo de demonstração · este PIX não é pagável.</p>
         <button type="button" id="stagingConfirm" class="btn-orange btn-pix" hidden>SIMULAR PAGAMENTO — STAGING</button>
-        <p class="pix-instruction">Pague com Pix</p><p id="pixExpiry" class="pix-expiry" aria-live="off"></p>
+        <p class="pix-instruction">Pague com Pix</p>
         <div class="pix-qr-container">
           <img id="pixQrImage" src="" alt="QR Code PIX" class="pix-qr-image" />
         </div>
@@ -416,9 +412,8 @@ document.getElementById('ageExit').addEventListener('click',function(){window.lo
           <span class="pix-status-indicator"></span>
           <span class="pix-status-message" id="pixStatusMessage" role="status" aria-live="polite">Aguardando pagamento...</span>
         </div>
-        <button type="button" id="pixRegenerate" class="btn-orange" hidden>GERAR NOVO PIX</button>
-        <button type="button" id="pixSmallerPlan" hidden>Começar por 1 mês</button>
-        <div id="pushOffer" hidden><button type="button">Me avise quando confirmar</button><small></small></div>
+
+
       </div>
 
       <p class="checkout-note checkout-security">Acesso liberado após a confirmação do pagamento.<br>Seus dados ficam protegidos.</p>
@@ -444,10 +439,7 @@ document.getElementById('ageExit').addEventListener('click',function(){window.lo
  <button type="button" id="contactUnlockLater" class="contact-later">Agora não</button>
 </section></div>
 
-<script defer src="/analytics.js"></script>
-<script defer src="/push.js"></script>
 <script defer src="/pending-checkouts.js"></script>
-<script defer src="/pix-notification.js"></script>
 <script defer src="app.js?v=carousel-1"></script>
 <script defer src="/admin-loader.js?v=1"></script>
 
