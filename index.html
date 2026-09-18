@@ -3,11 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <style>html{background:#f4f3f1}</style>
+  <script>try{document.documentElement.dataset.age=sessionStorage.getItem('ayla.age.confirmed')==='yes'?'ok':'ask';}catch(e){document.documentElement.dataset.age='ask';}</script>
   <style>
   /* Crítico: a tela 18+ pinta junto com o HTML, sem esperar o style.css. */
   body.age-pending{overflow:hidden}
   body.age-pending > :not(#ageGate):not(script){visibility:hidden!important}
   .age-gate[hidden]{display:none}
+  html[data-age="ok"] #ageGate{display:none!important}
+  html[data-age="ok"] body.age-pending > :not(#ageGate):not(script){visibility:visible!important}
   .age-gate{position:fixed;inset:0;z-index:100000;display:grid;place-items:center;padding:20px;overflow:auto;background:#fff;font-family:Poppins,Arial,sans-serif;color:#293142}
   .age-gate-card{width:min(100%,380px);text-align:center;border:1px solid #ededed;border-radius:22px;padding:30px 24px 20px}
   .age-gate-badge{display:inline-grid;place-items:center;width:60px;height:60px;border-radius:50%;background:#fff1e6;color:#ef7623;font-size:23px;font-weight:600}
@@ -54,7 +57,7 @@
 /* Confirmação já funciona antes do app.js chegar; o app.js reconfirma depois
    pelo sessionStorage, então clicar duas vezes não muda nada. */
 (function(){var g=document.getElementById('ageGate'),ok=document.getElementById('ageConfirm');
-function entrar(){window.__ageOk=true;g.hidden=true;document.body.classList.remove('age-pending');}
+function entrar(){window.__ageOk=true;document.documentElement.dataset.age='ok';g.hidden=true;document.body.classList.remove('age-pending');}
 try{if(sessionStorage.getItem('ayla.age.confirmed')==='yes')entrar();}catch(e){}
 ok.addEventListener('click',function(){try{sessionStorage.setItem('ayla.age.confirmed','yes');}catch(e){}entrar();});
 document.getElementById('ageExit').addEventListener('click',function(){window.location.replace('about:blank');});})();
@@ -77,7 +80,7 @@ document.getElementById('ageExit').addEventListener('click',function(){window.lo
       <span class="cover-note">mais perto, mais eu.</span>
       <div class="cover-controls">
         <button id="pixNotificationBell" class="pix-notification-bell" type="button" hidden aria-label="Notificações" aria-expanded="false" aria-controls="pixNotificationPanel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/></svg><span id="pixNotificationBadge" class="pix-notification-badge" hidden>1</span></button>
-        <a class="member-link" data-buyer-access href="/meu-acesso"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="12" cy="8" r="3.3"/><path d="M5.5 20v-1.5a6.5 6.5 0 0 1 13 0V20"/></svg><span>Minha conta</span></a>
+        <a class="member-link" data-buyer-access href="/meu-acesso"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8.4" r="3.4"/><path d="M4.9 20.2a7.1 7.1 0 0 1 14.2 0"/></svg><span>Minha conta</span></a>
       </div>
     </div>
     <div id="pixNotificationPanel" class="pix-notification-panel" hidden></div>
