@@ -87,13 +87,24 @@ function token(req) {
 }
 function csrf(value) { return crypto.createHmac('sha256', signingKey()).update('csrf:' + value).digest('hex'); }
 function origin(req) {
-  let expected;
+  // Origens aceitas: as configuradas (ADMIN_ORIGIN/PUBLIC_APP_URL, separadas por
+  // vírgula) e o PRÓPRIO endereço em que o painel está aberto, desde que o
+  // navegador confirme `sec-fetch-site: same-origin`. Sem isso, trocar o domínio
+  // do site (um domínio próprio, por exemplo) travava o login da criadora.
+  // Qualquer origem cruzada continua barrada — que é o ataque que isto previne.
+  const aceitas = new Set();
   try {
-    const configured = process.env.ADMIN_ORIGIN || process.env.PUBLIC_APP_URL;
-    if (configured) expected = new URL(configured).origin;
-    else if (process.env.NODE_ENV !== 'production') expected = `${req.protocol}://${req.get('host')}`;
+    for (const item of String(process.env.ADMIN_ORIGIN || process.env.PUBLIC_APP_URL || '').split(',')) {
+      const limpo = item.trim();
+      if (limpo) aceitas.add(new URL(limpo).origin);
+    }
   } catch (_) { /* fail closed */ }
-  if (!expected || req.get('origin') !== expected || req.get('sec-fetch-site') === 'cross-site') throw fail('Origem administrativa inválida.', 403);
+  const enviada = req.get('origin');
+  const propria = `${req.protocol}://${req.get('host')}`;
+  const mesmoSite = req.get('sec-fetch-site') === 'same-origin';
+  if (process.env.NODE_ENV !== 'production' && !aceitas.size) aceitas.add(propria);
+  const permitida = enviada && (aceitas.has(enviada) || (enviada === propria && mesmoSite));
+  if (!permitida || req.get('sec-fetch-site') === 'cross-site') throw fail('Origem administrativa inválida.', 403);
 }
 async function session(req) {
   const value = token(req);
