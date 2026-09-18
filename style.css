@@ -2040,3 +2040,11 @@ body.carregando .stats-row span { color:#dcd8d5; }
   .cover-controls .member-link, .pix-notification-bell { width:33px; height:33px; }
   .cover-controls .member-link svg, .pix-notification-bell svg { width:17px; height:17px; }
 }
+
+/* A faixa no topo saiu: o aviso de PIX pendente agora é o sino da capa.
+   O elemento continua no HTML (o app escreve nele), só não aparece. */
+.pending-pix-notice, .pending-pix-notice:not([hidden]) { display:none !important; }
+
+/* Consentimento do checkout: uma linha discreta, antes do PIX existir. */
+.checkout-consent { margin:12px 2px 0; font:400 11.5px/1.55 Poppins,Arial,sans-serif; color:#8d8d8d; text-align:center; }
+.checkout-consent a { color:var(--accent); text-decoration:underline; }
