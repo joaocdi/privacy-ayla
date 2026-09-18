@@ -2048,3 +2048,11 @@ body.carregando .stats-row span { color:#dcd8d5; }
 /* Consentimento do checkout: uma linha discreta, antes do PIX existir. */
 .checkout-consent { margin:12px 2px 0; font:400 11.5px/1.55 Poppins,Arial,sans-serif; color:#8d8d8d; text-align:center; }
 .checkout-consent a { color:var(--accent); text-decoration:underline; }
+
+/* A sentinela do scroll infinito não é conteúdo: nunca ocupa célula da grade. */
+.feed-sentinela { height:1px; }
+.media-grid .feed-sentinela { grid-column:1 / -1; }
+
+/* A aba "Mídias" é amostra de 6: mesmo com o feed paginado, a grade
+   nunca passa disso. */
+.media-grid article.preview-post:nth-of-type(n+7) { display: none; }

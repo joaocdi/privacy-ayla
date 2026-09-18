@@ -127,6 +127,9 @@ function withReturningId(sql) {
   if (!/^insert\s/i.test(trimmed)) return { sql: trimmed, added: false };
   if (/\breturning\b/i.test(trimmed)) return { sql: trimmed, added: false };
   if(/^insert\s+into\s+buyer_accounts\b/i.test(trimmed))return {sql:`${trimmed} RETURNING user_id AS id`,added:false};
+  // Tabelas cuja chave não se chama `id`: pedir RETURNING id derruba a
+  // transação inteira no PostgreSQL ("column id does not exist").
+  if (/^insert\s+into\s+(media_deletions|admin_users|entitlement_duplicates_archive)\b/i.test(trimmed)) return { sql: trimmed, added: false };
   return { sql: `${trimmed} RETURNING id`, added: true };
 }
 

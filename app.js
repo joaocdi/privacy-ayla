@@ -277,6 +277,7 @@ function mountLockedCarousel(locked, overlay, items, teaserSeconds) {
 }
 
 function decorateLockedPost(post, { type, caption, id, likes_count }) {
+  if (!post || post.closest('.preview-post')) return;   // nunca decorar duas vezes
   const head = post.previousElementSibling;
   const article = document.createElement('article');
   article.className = 'preview-post';
@@ -779,17 +780,17 @@ document.addEventListener('click', event => {
       const safe = Array.isArray(item.items) ? item.items.filter(isSafePreviewItem) : [];
       if (safe.length > 1) mountLockedCarousel(locked, overlay, safe, item.teaserSeconds);
       fragment.append(header, locked);
-      usados.push(item);
+      usados.push({ item, locked });
     });
     return { fragment, usados };
   }
 
   function decorar(usados) {
-    const cards = [...document.querySelectorAll('.locked-post')];
-    usados.forEach((item, index) => {
-      const post = cards[rendered + index];
-      if (!post) return;
-      decorateLockedPost(post, {
+    // Pela referência do próprio cartão: contar posição no DOM já causou
+    // cartão decorado duas vezes (barra de curtidas repetida no fim do feed).
+    usados.forEach(({ item, locked }, index) => {
+      if (!locked || locked.closest('.preview-post')) return;
+      decorateLockedPost(locked, {
         id: item.id, likes_count: item.likes_count,
         type: item.type === 'video' ? 'video' : 'image',
         caption: item.caption || HOME_CAPTIONS[(rendered + index) % HOME_CAPTIONS.length]
@@ -810,7 +811,9 @@ document.addEventListener('click', event => {
       const { fragment, usados } = montar(data.previews);
       if (!fragment.childNodes.length) return;
       if (offset === 0) { existing.forEach(article => article.remove()); anchor.after(fragment); }
-      else { (sentinela || [...document.querySelectorAll('.locked-post')].pop())?.before(fragment); }
+      // A sentinela fica sempre por último: página nova entra antes dela.
+      else if (sentinela) sentinela.before(fragment);
+      else [...document.querySelectorAll('#contentTabs .preview-post')].pop()?.after(fragment);
       decorar(usados);
       rendered += usados.length;
     } finally { carregando = false; }
@@ -823,7 +826,8 @@ document.addEventListener('click', event => {
   sentinela = document.createElement('div');
   sentinela.className = 'feed-sentinela';
   sentinela.setAttribute('aria-hidden', 'true');
-  [...document.querySelectorAll('.locked-post')].pop()?.after(sentinela);
+  ([...document.querySelectorAll('#contentTabs .preview-post')].pop()
+    || [...document.querySelectorAll('.locked-post')].pop())?.after(sentinela);
   const observer = new IntersectionObserver(async entries => {
     if (!entries.some(entry => entry.isIntersecting) || carregando) return;
     await pagina(rendered).catch(() => {});

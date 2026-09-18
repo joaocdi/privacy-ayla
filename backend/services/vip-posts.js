@@ -230,7 +230,7 @@ function validate(input) {
  */
 async function queueStaleTeaser(db, path) {
   if (!previewVideo.isPreviewPath(path)) return;
-  await db.run('INSERT INTO media_deletions(media_path) VALUES (?) ON CONFLICT(media_path) DO NOTHING', path);
+  await db.run('INSERT INTO media_deletions(media_path) VALUES (?) ON CONFLICT(media_path) DO NOTHING RETURNING media_path', path);
 }
 
 async function save(id, input, sessionId) {
