@@ -9,7 +9,9 @@ require('dotenv').config({ path: require('path').join(__dirname, '..', '.env') }
  *  - fora de produção, sem PAYMENT_PROVIDER, o padrão continua sendo mock.
  */
 const SUPPORTED = ['mock', 'sigilopay', 'syncpay', 'staging'];
-const production = process.env.NODE_ENV === 'production';
+const production = process.env.NODE_ENV === 'production'
+  || process.env.APP_ENV === 'production'
+  || process.env.VERCEL_ENV === 'production';   // qualquer um destes já vale como produção
 const name = String(process.env.PAYMENT_PROVIDER || (production ? '' : 'mock')).trim();
 
 function unavailableProvider(reason) {

@@ -100,10 +100,15 @@ function origin(req) {
     }
   } catch (_) { /* fail closed */ }
   const enviada = req.get('origin');
-  const propria = `${req.protocol}://${req.get('host')}`;
+  const host = req.get('host');
   const mesmoSite = req.get('sec-fetch-site') === 'same-origin';
-  if (process.env.NODE_ENV !== 'production' && !aceitas.size) aceitas.add(propria);
-  const permitida = enviada && (aceitas.has(enviada) || (enviada === propria && mesmoSite));
+  // Comparação por DOMÍNIO, não pela URL inteira: atrás do proxy da Vercel o
+  // Express vê `http` enquanto o navegador manda `https`, e a comparação com
+  // esquema nunca batia — era isto que travava o login em domínio próprio.
+  let mesmoDominio = false;
+  try { mesmoDominio = Boolean(enviada) && new URL(enviada).host === host; } catch (_) { mesmoDominio = false; }
+  if (process.env.NODE_ENV !== 'production' && !aceitas.size && enviada) aceitas.add(enviada);
+  const permitida = Boolean(enviada) && (aceitas.has(enviada) || (mesmoDominio && mesmoSite));
   if (!permitida || req.get('sec-fetch-site') === 'cross-site') throw fail('Origem administrativa inválida.', 403);
 }
 async function session(req) {
