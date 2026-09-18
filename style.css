@@ -1981,3 +1981,22 @@ body.age-pending > :not(#ageGate):not(script) { visibility:hidden !important; }
 .cover-wrap > .member-link span { position:absolute; width:1px; height:1px; margin:-1px; padding:0; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0; }
 .cover-wrap > .member-link svg { width:17px; height:17px; }
 @media (max-width:360px) { .cover-wrap > .member-link { width:32px; height:32px; top:8px; right:8px; } }
+
+/* ===== ESQUELETO DE CARREGAMENTO ===================================
+   A casca do site vem da CDN na hora; o perfil vem da API um instante
+   depois. Neste intervalo, em vez de ícone de imagem quebrada e texto
+   solto, a página mostra blocos neutros. Sai sozinho quando o perfil
+   chega (ou quando falha, para o aviso aparecer). */
+body.carregando .cover-img,
+body.carregando .avatar-img { visibility:hidden; }
+body.carregando .cover-wrap { background:#efedeb; }
+body.carregando .cover-note,
+body.carregando .read-more-btn,
+body.carregando .verified-badge,
+body.carregando .social-links,
+body.carregando .home-preview-caption,
+body.carregando .post-caption { visibility:hidden; }
+body.carregando #profileName { display:inline-block; min-width:120px; height:19px; border-radius:6px; background:#eceae8; }
+body.carregando #profileUsername { display:inline-block; min-width:92px; height:12px; border-radius:5px; background:#f1efed; }
+body.carregando #profileBio { display:block; min-height:34px; border-radius:7px; background:#f4f2f0; }
+body.carregando .stats-row span { color:#dcd8d5; }
