@@ -1928,7 +1928,7 @@ body.age-pending > :not(#ageGate):not(script) { visibility:hidden !important; }
 /* ===== Sem barra superior: "Minha conta" flutuando sobre o banner ===== */
 .topbar { display: none !important; }
 .profile-card { margin-top: 10px; }
-.cover-wrap > .member-link {
+.cover-controls .member-link {
   position: absolute; top: 10px; right: 10px; z-index: 3;
   display: flex; align-items: center; gap: 5px;
   padding: 7px 12px 7px 9px; border-radius: 999px;
@@ -1939,8 +1939,8 @@ body.age-pending > :not(#ageGate):not(script) { visibility:hidden !important; }
   font: 600 11px/1 Poppins, Arial, sans-serif;
   box-shadow: 0 2px 10px rgba(0, 0, 0, .18);
 }
-.cover-wrap > .member-link span { padding: 0; color: #fff; }
-.cover-wrap > .member-link svg { width: 16px; height: 16px; }
+.cover-controls .member-link span { padding: 0; color: #fff; }
+.cover-controls .member-link svg { width: 16px; height: 16px; }
 .cover-wrap > .member-link:hover { background: rgba(24, 18, 15, .58); border-color: rgba(255, 255, 255, .45); }
 .cover-wrap > .member-link:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
 
@@ -1949,8 +1949,7 @@ body.age-pending > :not(#ageGate):not(script) { visibility:hidden !important; }
 .plans-section .promo-plans-content .btn-plan .plan-pill { padding: 2px 7px; border-radius: 20px; background: transparent; color: rgba(23, 23, 23, .62); border: 1px solid rgba(23, 23, 23, .22); font: normal 500 9.5px/1.3 Poppins, Arial, sans-serif; letter-spacing: .06em; }
 @media (max-width: 359px) { .plans-section .promo-plans-content .btn-plan span:first-child { gap: 6px; } .plans-section .promo-plans-content .btn-plan .plan-pill { padding: 2px 6px; font-size: 9px; } }
 
-/* ===== RODAPÉ COMPACTO ==============================================
-   Fechado são três linhas discretas. Os quatro links e o aviso de 18+/IA
+/* ===== RODAPÉ COMPACTO =======================================   Fechado são três linhas discretas. Os quatro links e o aviso de 18+/IA
    continuam na página, dentro de "Informações" — a um toque, sem ocupar
    meia tela no celular. */
 .home-footer { text-align:center; padding:14px 18px 18px; margin-top:var(--block-gap); background:#fff; border-top:1px solid #f0efee; }
@@ -1977,10 +1976,10 @@ body.age-pending > :not(#ageGate):not(script) { visibility:hidden !important; }
 }
 
 /* "Minha conta" vira só o ícone: o mesmo botão, sem ocupar a capa. */
-.cover-wrap > .member-link { padding:0; width:34px; height:34px; justify-content:center; gap:0; }
-.cover-wrap > .member-link span { position:absolute; width:1px; height:1px; margin:-1px; padding:0; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0; }
-.cover-wrap > .member-link svg { width:17px; height:17px; }
-@media (max-width:360px) { .cover-wrap > .member-link { width:32px; height:32px; top:8px; right:8px; } }
+.cover-controls .member-link { padding:0; width:34px; height:34px; justify-content:center; gap:0; }
+.cover-controls .member-link span { position:absolute; width:1px; height:1px; margin:-1px; padding:0; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0; }
+.cover-controls .member-link svg { width:17px; height:17px; }
+@media (max-width:360px) { .cover-controls .member-link { width:32px; height:32px; top:8px; right:8px; } }
 
 /* ===== ESQUELETO DE CARREGAMENTO ===================================
    A casca do site vem da CDN na hora; o perfil vem da API um instante
@@ -2000,3 +1999,31 @@ body.carregando #profileName { display:inline-block; min-width:120px; height:19p
 body.carregando #profileUsername { display:inline-block; min-width:92px; height:12px; border-radius:5px; background:#f1efed; }
 body.carregando #profileBio { display:block; min-height:34px; border-radius:7px; background:#f4f2f0; }
 body.carregando .stats-row span { color:#dcd8d5; }
+=======
+/* Quiet pending PIX reminder and factual expiry actions. */
+.pending-pix-notice:not([hidden]){position:sticky;top:0;z-index:12;background:#fff9f2;box-shadow:0 3px 10px #0000000c}
+#pixExpiry{min-height:1.3em;text-align:center;color:#7b6255;font-size:12px}
+#pixRegenerate{display:block;width:100%;margin:10px 0}#pixSmallerPlan{display:block;width:100%;min-height:40px;border:0;background:transparent;color:#6d554a;cursor:pointer}
+#pushOffer{text-align:center;margin:14px 0}#pushOffer button{border:0;background:transparent;text-decoration:underline;color:#91542f;cursor:pointer}#pushOffer small{display:block}
+
+
+/* Recuperação de PIX integrada à capa, ao lado de Minha conta. */
+.profile-card { overflow: visible; position: relative; margin-top: 10px; }
+.cover-controls { position:absolute; top:10px; right:10px; z-index:3; display:flex; align-items:center; gap:7px; }
+.cover-controls .member-link { display:flex; align-items:center; gap:5px; padding:7px 12px 7px 9px; border:1px solid #ffffff4d; border-radius:999px; background:#18120f6b; color:#fff; text-decoration:none; white-space:nowrap; font:600 11px/1 Poppins,Arial,sans-serif; box-shadow:0 2px 10px #0003; backdrop-filter:blur(10px); }
+.cover-controls .member-link span { padding:0; color:#fff; }
+.cover-controls .member-link svg { width:16px; height:16px; }
+.cover-controls .member-link:hover { background:#18120f94; border-color:#ffffff73; }
+.cover-controls .member-link:focus-visible { outline:2px solid #fff; outline-offset:2px; }
+.pix-notification-bell { position:relative; display:grid; place-items:center; width:36px; height:36px; padding:0; border:1px solid #ffffff4d; border-radius:50%; background:#18120f6b; color:#fff; backdrop-filter:blur(10px); box-shadow:0 2px 10px #0003; cursor:pointer; }
+.pix-notification-bell svg { width:19px; height:19px; }
+.pix-notification-badge { position:absolute; top:-5px; right:-5px; display:grid; place-items:center; min-width:17px; height:17px; padding:0 4px; border:2px solid #fff; border-radius:12px; background:#f58d3d; color:#fff; font:700 10px/1 Poppins,Arial,sans-serif; }
+.pix-notification-panel { position:absolute; top:52px; right:10px; z-index:30; width:min(284px,calc(100vw - 36px)); padding:14px; border:1px solid #efe2d8; border-radius:15px; background:#fff; box-shadow:0 14px 35px #22150e30; color:#2b3038; font:13px/1.4 Poppins,Arial,sans-serif; }
+.pix-notification-header { display:flex; align-items:center; gap:7px; }
+.pix-notification-header strong { font-size:14px; }
+.pix-notification-header span { font-size:12px; color:#8a6e5b; }
+.pix-notification-close { margin-left:auto; border:0; background:none; color:#766c66; font:20px/1 Arial,sans-serif; cursor:pointer; }
+.pix-notification-detail { margin:8px 0 12px; color:#71675f; font-size:12px; }
+.pix-notification-action { width:100%; min-height:40px; border:0; border-radius:22px; background:linear-gradient(105deg,#ff963f,#fac69f); color:#28232a; font:600 12px Poppins,Arial,sans-serif; cursor:pointer; }
+.pix-notification-bell:focus-visible,.pix-notification-panel button:focus-visible { outline:2px solid #e36a16; outline-offset:2px; }
+.pix-notification-bell[hidden],.pix-notification-panel[hidden],.pix-notification-badge[hidden] { display:none!important; }

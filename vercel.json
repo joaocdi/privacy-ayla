@@ -70,7 +70,7 @@
       ]
     },
     {
-      "source": "/:asset(app.js|style.css|frame.js|frame.css|carousel.js|carousel.css|fonts.css|image-tools.js|pending-checkouts.js|pix-notification.js|analytics.js|push.js|push-sw.js|continue.js|continue.html|vip.js|vip.css|buyer-account.js|buyer-account.css|admin-loader.js|admin-mode.js|admin-mode.css|tips.js|tips.css)",
+      "source": "/:asset(app.js|style.css|frame.js|frame.css|carousel.js|carousel.css|fonts.css|image-tools.js|pending-checkouts.js|vip.js|vip.css|buyer-account.js|buyer-account.css|admin-loader.js|admin-mode.js|admin-mode.css|tips.js|tips.css)",
       "headers": [
         {
           "key": "Cache-Control",

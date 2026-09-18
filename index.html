@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-creator="ayla">
 <head>
   <meta charset="UTF-8" />
   <style>html{background:#f4f3f1}</style>
@@ -75,8 +75,12 @@ document.getElementById('ageExit').addEventListener('click',function(){window.lo
     <div class="cover-wrap">
       <img  alt="Foto de capa" class="cover-img" id="coverImg" fetchpriority="high" decoding="async" width="1280" height="525" />
       <span class="cover-note">mais perto, mais eu.</span>
-      <a class="member-link" data-buyer-access href="/meu-acesso"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="12" cy="8" r="3.3"/><path d="M5.5 20v-1.5a6.5 6.5 0 0 1 13 0V20"/></svg><span>Minha conta</span></a>
+      <div class="cover-controls">
+        <button id="pixNotificationBell" class="pix-notification-bell" type="button" hidden aria-label="Notificações" aria-expanded="false" aria-controls="pixNotificationPanel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/></svg><span id="pixNotificationBadge" class="pix-notification-badge" hidden>1</span></button>
+        <a class="member-link" data-buyer-access href="/meu-acesso"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="12" cy="8" r="3.3"/><path d="M5.5 20v-1.5a6.5 6.5 0 0 1 13 0V20"/></svg><span>Minha conta</span></a>
+      </div>
     </div>
+    <div id="pixNotificationPanel" class="pix-notification-panel" hidden></div>
 
     <!-- Avatar + Stats row -->
     <div class="avatar-row">
@@ -394,7 +398,7 @@ document.getElementById('ageExit').addEventListener('click',function(){window.lo
       <div id="pixActiveArea" style="display:none;">
         <p id="pixMockNotice" class="checkout-note" hidden>Modo de demonstração · este PIX não é pagável.</p>
         <button type="button" id="stagingConfirm" class="btn-orange btn-pix" hidden>SIMULAR PAGAMENTO — STAGING</button>
-        <p class="pix-instruction">Pague com Pix</p>
+        <p class="pix-instruction">Pague com Pix</p><p id="pixExpiry" class="pix-expiry" aria-live="off"></p>
         <div class="pix-qr-container">
           <img id="pixQrImage" src="" alt="QR Code PIX" class="pix-qr-image" />
         </div>
@@ -403,17 +407,18 @@ document.getElementById('ageExit').addEventListener('click',function(){window.lo
           <label class="pix-copypaste-title">PIX copia e cola</label>
           <div class="pix-copypaste-input-wrap">
             <input type="text" id="pixCodeInput" class="pix-copypaste-field" readonly />
-            <button type="button" class="pix-btn-copy" id="btnCopyPix">COPIAR CÓDIGO PIX</button>
+            <button type="button" class="pix-btn-copy" id="btnCopyPix">COPIAR PIX</button>
           </div>
         </div>
 
-        <ol class="buyer-pix-steps"><li>Toque em “Copiar código Pix”.</li><li>Abra o aplicativo do seu banco.</li><li>Escolha Pix → Copia e Cola.</li><li>Cole o código e confirme o pagamento.</li></ol><p class="checkout-note">Não precisa atualizar esta página.</p>
+        <ol class="buyer-pix-steps"><li>Toque em “Copiar PIX”.</li><li>Abra o aplicativo do seu banco.</li><li>Escolha Pix → Copia e Cola.</li><li>Cole o código e confirme o pagamento.</li></ol><p class="checkout-note">Não precisa atualizar esta página.</p>
         <div class="pix-status-container" id="pixStatusContainer">
           <span class="pix-status-indicator"></span>
           <span class="pix-status-message" id="pixStatusMessage" role="status" aria-live="polite">Aguardando pagamento...</span>
         </div>
-
-
+        <button type="button" id="pixRegenerate" class="btn-orange" hidden>GERAR NOVO PIX</button>
+        <button type="button" id="pixSmallerPlan" hidden>Começar por 1 mês</button>
+        <div id="pushOffer" hidden><button type="button">Me avise quando confirmar</button><small></small></div>
       </div>
 
       <p class="checkout-note checkout-security">Acesso liberado após a confirmação do pagamento.<br>Seus dados ficam protegidos.</p>
@@ -439,7 +444,10 @@ document.getElementById('ageExit').addEventListener('click',function(){window.lo
  <button type="button" id="contactUnlockLater" class="contact-later">Agora não</button>
 </section></div>
 
+<script defer src="/analytics.js"></script>
+<script defer src="/push.js"></script>
 <script defer src="/pending-checkouts.js"></script>
+<script defer src="/pix-notification.js"></script>
 <script defer src="app.js?v=carousel-1"></script>
 <script defer src="/admin-loader.js?v=1"></script>
 
