@@ -38,8 +38,24 @@ function getDb() {
   return dbPromise;
 }
 
+
+// Instância fria não refaz a migração inteira: uma marca com a impressão
+// digital dos schemas diz se este banco já está no formato atual. Mudou
+// qualquer arquivo de schema (ou o MIGRATION_VERSION), a migração roda de novo.
+const MIGRATION_VERSION = '2026-09-18';
+function schemaFingerprint() {
+  const partes = ['schema.sql', 'schema.buyer.sql', 'schema.content.sql', 'content-migrations.js']
+    .map(nome => require('node:fs').readFileSync(path.join(__dirname, nome)));
+  return require('node:crypto').createHash('sha256')
+    .update(MIGRATION_VERSION).update(Buffer.concat(partes)).digest('hex').slice(0, 32);
+}
+
 async function initDb() {
   const db = await getDb();
+  const marca = schemaFingerprint();
+  await db.exec('CREATE TABLE IF NOT EXISTS schema_state (id TEXT PRIMARY KEY, fingerprint TEXT NOT NULL, updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP)');
+  const jaMigrado = await db.get("SELECT fingerprint FROM schema_state WHERE id='schema'").catch(() => null);
+  if (jaMigrado && jaMigrado.fingerprint === marca) return db;
   const schemaPath = path.resolve(__dirname, 'schema.sql');
   const schema = fs.readFileSync(schemaPath, 'utf8');
 
@@ -83,6 +99,7 @@ async function initDb() {
     CREATE UNIQUE INDEX IF NOT EXISTS provider_payment_unique ON orders(payment_provider, provider_payment_id);`);
   await require('./grant-migrations').migrate(db);
   await require('./account-migrations').migrate(db);
+  await db.run("INSERT INTO schema_state(id,fingerprint) VALUES ('schema',?) ON CONFLICT(id) DO UPDATE SET fingerprint=excluded.fingerprint, updated_at=CURRENT_TIMESTAMP", marca);
   return db;
 }
 

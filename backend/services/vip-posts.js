@@ -45,17 +45,19 @@ async function list() {
 async function homePreviews({ limit = MAX_HOME_PREVIEWS, offset = 0 } = {}) {
   if (await source() !== 'managed') return [];
   const db = await getDb();
-  const rows = await db.all(`SELECT id,type,caption,preview_image,crop_data,preview_video,likes_count,
-    (SELECT COUNT(*) FROM vip_post_likes l WHERE l.post_id=vip_posts.id) AS likes FROM vip_posts
-    WHERE creator_id='ayla' AND published=1 AND archived=0 AND show_as_preview=1 AND preview_image IS NOT NULL AND preview_image<>''
-    ORDER BY sort_order,created_at,id`);
-  // Página do feed público: o visitante recebe as primeiras e busca o resto
-  // ao chegar perto do fim. O teto continua sendo MAX_HOME_PREVIEWS.
+  // A página vem do banco já cortada: ler TODAS as prévias (cada uma com a
+  // amostra embutida) só para jogar fora quase tudo custava mais de um
+  // segundo por visita.
+  const filtro = "creator_id='ayla' AND published=1 AND archived=0 AND show_as_preview=1 AND preview_image IS NOT NULL AND preview_image<>''";
   const start = Math.max(0, Math.min(Number(offset) || 0, MAX_HOME_PREVIEWS));
   const size = Math.max(1, Math.min(Number(limit) || MAX_HOME_PREVIEWS, MAX_HOME_PREVIEWS));
-  const disponiveis = rows.slice(0, MAX_HOME_PREVIEWS);
-  const chosen = disponiveis.slice(start, start + size);
-  const total = disponiveis.length;
+  const janela = Math.max(0, Math.min(size, MAX_HOME_PREVIEWS - start));
+  const contagem = await db.get(`SELECT COUNT(*) AS n FROM vip_posts WHERE ${filtro}`);
+  const total = Math.min(Number(contagem?.n) || 0, MAX_HOME_PREVIEWS);
+  const chosen = janela ? await db.all(`SELECT id,type,caption,preview_image,crop_data,preview_video,likes_count,
+    (SELECT COUNT(*) FROM vip_post_likes l WHERE l.post_id=vip_posts.id) AS likes FROM vip_posts
+    WHERE ${filtro}
+    ORDER BY sort_order,created_at,id LIMIT ? OFFSET ?`, janela, start) : [];
   // `fallback: false`: esta função responde ao VISITANTE e por isso não lê,
   // nem indiretamente, o caminho do arquivo original.
   const byPost = await postMedia.listForMany(db, chosen, { fallback: false });
