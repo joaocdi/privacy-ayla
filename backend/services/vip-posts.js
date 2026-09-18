@@ -8,7 +8,9 @@ const cleanup = require('./media-cleanup');
 const previewVideo = require('./preview-video');
 const postMedia = require('./post-media');
 const fail = (message, status = 400) => Object.assign(new Error(message), { status });
-const MAX_HOME_PREVIEWS = 12;
+// Teto de prévias na HOME. Com a página vindo cortada do banco, um teto
+// maior não pesa: continuam saindo 6 por requisição.
+const MAX_HOME_PREVIEWS = 24;
 
 async function source(db = null) {
   return (await (db || await getDb()).get("SELECT source FROM vip_content_settings WHERE id='ayla'"))?.source || 'legacy';

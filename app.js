@@ -129,7 +129,7 @@ function applyProfile(profile) {
  * As legendas abaixo são de apresentação. Nenhuma contagem de curtidas é
  * exibida aqui: números simulados não devem parecer engajamento real.
  */
-const HOME_CAPTIONS = Array(7).fill('Prévia ilustrativa — mídia da Ayla ainda não cadastrada.');
+const HOME_CAPTIONS = [''];
 /**
  * TEASER DE VÍDEO BLOQUEADO.
  *
@@ -287,7 +287,8 @@ function decorateLockedPost(post, { type, caption, id, likes_count }) {
   post.parentNode.insertBefore(article, head);
   article.append(head);
   const captionEl = document.createElement('p');
-  captionEl.className = 'preview-caption'; captionEl.textContent = caption;
+  captionEl.className = 'preview-caption'; captionEl.textContent = caption || '';
+  if (!captionEl.textContent) captionEl.hidden = true;
   // Sem etiqueta de FOTO/VÍDEO e sem faixa sobre a mídia: o feed fica limpo.
   head.querySelector('.post-menu')?.remove();
   article.append(captionEl, post);
@@ -319,11 +320,6 @@ function decorateLockedPost(post, { type, caption, id, likes_count }) {
   footer.append(left, note); article.append(footer);
   return article;
 }
-(function polishHomeFeed() {
-  document.querySelectorAll('.locked-post').forEach((post, index) => {
-    decorateLockedPost(post, { type: index === 0 ? 'image' : 'video', caption: HOME_CAPTIONS[index] });
-  });
-})();
 
 /* ===========================
    MODAL HELPERS
@@ -727,8 +723,9 @@ document.addEventListener('click', event => {
   const PAGE = 6;
   const anchor = document.querySelector('#contentTabs .tabs-bar');
   const existing = [...document.querySelectorAll('.preview-post')];
-  const blueprint = existing[0]?.querySelector('.post-header');
-  const overlayModel = document.querySelector('.locked-overlay')?.innerHTML || '';
+  const modelo = document.getElementById('previewModel')?.content;
+  const blueprint = modelo?.querySelector('.post-header');
+  const overlayModel = modelo?.querySelector('.locked-overlay')?.innerHTML || '';
   if (!blueprint || !anchor) return;
 
   const vistos = new Set();   // guarda contra card repetido ao paginar

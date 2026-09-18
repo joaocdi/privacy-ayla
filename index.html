@@ -205,7 +205,9 @@ document.getElementById('ageExit').addEventListener('click',function(){window.lo
       </button>
     </div>
 
-    <!-- POST 1 (Image) -->
+    <!-- Modelo dos cartões do feed. Não aparece: serve só para o app.js
+         clonar cabeçalho e cadeado ao montar as prévias reais. -->
+    <template id="previewModel">
     <div class="post-header">
       <img data-profile-avatar alt="Avatar" class="post-avatar" />
       <div class="post-info">
@@ -217,154 +219,11 @@ document.getElementById('ageExit').addEventListener('click',function(){window.lo
       </div>
       <button class="post-menu" aria-label="Menu"><span></span><span></span><span></span></button>
     </div>
-    <div class="locked-post">
-      <img src="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'%3E%3Crect width='4' height='5' fill='%23e9e2da'/%3E%3C/svg%3E" alt="Prévia desfocada de uma foto exclusiva" class="locked-img" loading="lazy" width="480" height="600" />
       <div class="locked-overlay">
         <div class="lock-icon">
           <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
         </div>
-        <p class="locked-text">Conteúdo exclusivo</p>
-        <button class="btn-orange btn-unlock">Assinar por R$ 9,90</button>
-      </div>
-    </div>
-
-    <!-- POST 3 (Video 1) -->
-    <div class="post-header" style="margin-top: 15px;">
-      <img data-profile-avatar alt="Avatar" class="post-avatar" />
-      <div class="post-info">
-        <div class="post-name-row">
-          <span class="post-name dynamic-post-name"></span>
-          <img class="verified-icon" src="/verified-ayla.png" width="12" height="12" alt="Verificado" />
-        </div>
-        <span class="post-username dynamic-post-username"></span>
-      </div>
-      <button class="post-menu" aria-label="Menu"><span></span><span></span><span></span></button>
-    </div>
-    <div class="locked-post">
-      <img src="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'%3E%3Crect width='4' height='5' fill='%23e9e2da'/%3E%3C/svg%3E" alt="Prévia desfocada de um vídeo exclusivo" class="locked-img" loading="lazy" width="480" height="600" />
-      <div class="locked-overlay">
-        <div class="lock-icon">
-          <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
-        </div>
-        <p class="locked-text">Conteúdo exclusivo</p>
-        <button class="btn-orange btn-unlock">Assinar por R$ 9,90</button>
-      </div>
-    </div>
-
-    <!-- POST 4 (Video 2) -->
-    <div class="post-header" style="margin-top: 15px;">
-      <img data-profile-avatar alt="Avatar" class="post-avatar" />
-      <div class="post-info">
-        <div class="post-name-row">
-          <span class="post-name dynamic-post-name"></span>
-          <img class="verified-icon" src="/verified-ayla.png" width="12" height="12" alt="Verificado" />
-        </div>
-        <span class="post-username dynamic-post-username"></span>
-      </div>
-      <button class="post-menu" aria-label="Menu"><span></span><span></span><span></span></button>
-    </div>
-    <div class="locked-post">
-      <img src="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'%3E%3Crect width='4' height='5' fill='%23e9e2da'/%3E%3C/svg%3E" alt="Prévia desfocada de um vídeo exclusivo" class="locked-img" loading="lazy" width="480" height="600" />
-      <div class="locked-overlay">
-        <div class="lock-icon">
-          <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
-        </div>
-        <p class="locked-text">Conteúdo exclusivo</p>
-        <button class="btn-orange btn-unlock">Assinar por R$ 9,90</button>
-      </div>
-    </div>
-
-    <!-- POST 5 (Video 3) -->
-    <div class="post-header" style="margin-top: 15px;">
-      <img data-profile-avatar alt="Avatar" class="post-avatar" />
-      <div class="post-info">
-        <div class="post-name-row">
-          <span class="post-name dynamic-post-name"></span>
-          <img class="verified-icon" src="/verified-ayla.png" width="12" height="12" alt="Verificado" />
-        </div>
-        <span class="post-username dynamic-post-username"></span>
-      </div>
-      <button class="post-menu" aria-label="Menu"><span></span><span></span><span></span></button>
-    </div>
-    <div class="locked-post">
-      <img src="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'%3E%3Crect width='4' height='5' fill='%23e9e2da'/%3E%3C/svg%3E" alt="Prévia desfocada de um vídeo exclusivo" class="locked-img" loading="lazy" width="480" height="600" />
-      <div class="locked-overlay">
-        <div class="lock-icon">
-          <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
-        </div>
-        <p class="locked-text">Conteúdo exclusivo</p>
-        <button class="btn-orange btn-unlock">Assinar por R$ 9,90</button>
-      </div>
-    </div>
-
-    <!-- POST 6 (Video 4) -->
-    <div class="post-header" style="margin-top: 15px;">
-      <img data-profile-avatar alt="Avatar" class="post-avatar" />
-      <div class="post-info">
-        <div class="post-name-row">
-          <span class="post-name dynamic-post-name"></span>
-          <img class="verified-icon" src="/verified-ayla.png" width="12" height="12" alt="Verificado" />
-        </div>
-        <span class="post-username dynamic-post-username"></span>
-      </div>
-      <button class="post-menu" aria-label="Menu"><span></span><span></span><span></span></button>
-    </div>
-    <div class="locked-post">
-      <img src="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'%3E%3Crect width='4' height='5' fill='%23e9e2da'/%3E%3C/svg%3E" alt="Prévia desfocada de um vídeo exclusivo" class="locked-img" loading="lazy" width="480" height="600" />
-      <div class="locked-overlay">
-        <div class="lock-icon">
-          <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
-        </div>
-        <p class="locked-text">Conteúdo exclusivo</p>
-        <button class="btn-orange btn-unlock">Assinar por R$ 9,90</button>
-      </div>
-    </div>
-
-    <!-- POST 7 (Video 5) -->
-    <div class="post-header" style="margin-top: 15px;">
-      <img data-profile-avatar alt="Avatar" class="post-avatar" />
-      <div class="post-info">
-        <div class="post-name-row">
-          <span class="post-name dynamic-post-name"></span>
-          <img class="verified-icon" src="/verified-ayla.png" width="12" height="12" alt="Verificado" />
-        </div>
-        <span class="post-username dynamic-post-username"></span>
-      </div>
-      <button class="post-menu" aria-label="Menu"><span></span><span></span><span></span></button>
-    </div>
-    <div class="locked-post">
-      <img src="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'%3E%3Crect width='4' height='5' fill='%23e9e2da'/%3E%3C/svg%3E" alt="Prévia desfocada de um vídeo exclusivo" class="locked-img" loading="lazy" width="480" height="600" />
-      <div class="locked-overlay">
-        <div class="lock-icon">
-          <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
-        </div>
-        <p class="locked-text">Conteúdo exclusivo</p>
-        <button class="btn-orange btn-unlock">Assinar por R$ 9,90</button>
-      </div>
-    </div>
-
-    <!-- POST 8 (Video 6) -->
-    <div class="post-header" style="margin-top: 15px;">
-      <img data-profile-avatar alt="Avatar" class="post-avatar" />
-      <div class="post-info">
-        <div class="post-name-row">
-          <span class="post-name dynamic-post-name"></span>
-          <img class="verified-icon" src="/verified-ayla.png" width="12" height="12" alt="Verificado" />
-        </div>
-        <span class="post-username dynamic-post-username"></span>
-      </div>
-      <button class="post-menu" aria-label="Menu"><span></span><span></span><span></span></button>
-    </div>
-    <div class="locked-post" style="margin-bottom: 20px;">
-      <img src="data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'%3E%3Crect width='4' height='5' fill='%23e9e2da'/%3E%3C/svg%3E" alt="Prévia desfocada de um vídeo exclusivo" class="locked-img" loading="lazy" width="480" height="600" />
-      <div class="locked-overlay">
-        <div class="lock-icon">
-          <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
-        </div>
-        <p class="locked-text">Conteúdo exclusivo</p>
-        <button class="btn-orange btn-unlock">Assinar por R$ 9,90</button>
-      </div>
-    </div>
+    </template>
   </section>
 
   <!-- Rodapé compacto: selos + uma dobra "Informações". Fechado, ocupa três
