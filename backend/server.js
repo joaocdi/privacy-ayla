@@ -95,7 +95,7 @@ const accessRateLimit = rateLimit({ windowMs: 60 * 1000, max: 20 });
 // A tela de entrada da criadora e o modo administrador embutido nas páginas
 // entram aqui de propósito: não carregam segredo nenhum, e quem decide se
 // existe sessão de admin é o backend, não estes arquivos.
-const publicFiles = ['push.js','push-sw.js','continue.html','continue.js','analytics.js','fonts.css', 'image-tools.js', 'index.html', 'legal.html', 'app.js', 'style.css', 'avatar.jpg', 'cover.jpg', 'verified-ayla.png', 'favicon.ico',
+const publicFiles = ['push.js','push-sw.js','continue.html','continue.js','analytics.js','fonts.css', 'image-tools.js', 'index.html', 'legal.html', 'app.js', 'style.css', 'avatar.jpg', 'cover.jpg', 'verified-ayla.png', 'favicon.ico', 'og.jpg',
   'vip.html', 'vip.css', 'vip.js',
   'tips.js','tips.css','pending-checkouts.js','pix-notification.js','buyer-account.html','buyer-account.css','buyer-account.js','login.html', 'login.css', 'login.js', 'admin-mode.css', 'admin-mode.js', 'admin-loader.js', 'frame.js', 'frame.css', 'carousel.js', 'carousel.css'];
 app.use('/fonts', express.static(path.join(__dirname, '..', 'fonts'), { index: false, dotfiles: 'deny', maxAge: '1y', immutable: true }));

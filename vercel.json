@@ -7,7 +7,7 @@
   "functions": {
     "api/index.js": {
       "maxDuration": 30,
-      "includeFiles": "{*.html,*.js,*.css,analytics.js,push.js,push-sw.js,continue.js,continue.html,avatar.jpg,cover.jpg,verified-ayla.png,favicon.ico,previews/*.jpg,backend/**}"
+      "includeFiles": "{*.html,*.js,*.css,analytics.js,push.js,push-sw.js,continue.js,continue.html,avatar.jpg,cover.jpg,verified-ayla.png,favicon.ico,og.jpg,previews/*.jpg,backend/**}"
     }
   },
   "rewrites": [
@@ -79,7 +79,7 @@
       ]
     },
     {
-      "source": "/:asset(avatar.jpg|cover.jpg|verified-ayla.png|favicon.ico)",
+      "source": "/:asset(avatar.jpg|cover.jpg|verified-ayla.png|favicon.ico|og.jpg)",
       "headers": [
         {
           "key": "Cache-Control",

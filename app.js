@@ -15,11 +15,12 @@ window.ageReady = new Promise(resolve => { resolveAgeReady = resolve; });
   // (ele responde antes deste arquivo chegar). sessionStorage pode estar
   // bloqueado, então a marca global também vale.
   let confirmed = window.__ageOk === true;
-  try { confirmed = confirmed || sessionStorage.getItem('ayla.age.confirmed') === 'yes'; } catch (_) {}
+  try { confirmed = confirmed || localStorage.getItem('age_gate_confirmed_v1') === '1'
+    || sessionStorage.getItem('ayla.age.confirmed') === 'yes'; } catch (_) {}
   if (confirmed) enter();
   else document.getElementById('ageConfirm').focus();
   document.getElementById('ageConfirm').addEventListener('click', () => {
-    try { sessionStorage.setItem('ayla.age.confirmed', 'yes'); } catch (_) {}
+    try { localStorage.setItem('age_gate_confirmed_v1', '1'); sessionStorage.setItem('ayla.age.confirmed', 'yes'); } catch (_) {}
     enter(); document.querySelector('.logo-text')?.focus();
   });
   document.getElementById('ageExit').addEventListener('click', () => window.location.replace('about:blank'));
@@ -393,7 +394,7 @@ function openPaidAccount(pending, needsClaim) {
 }
 let pixTimer=null;const pendingSeen=new Set();const priorPending=new Set((window.AylaCheckouts?.list()||[]).map(x=>x.payment?.orderId).filter(Boolean));
 function startPixTimer(expiresAt,version,token){clearInterval(pixTimer);const target=document.getElementById('pixExpiry');const ms=expiresAt?Date.parse(String(expiresAt).replace(' ','T')+(String(expiresAt).includes('Z')?'':'Z')):NaN;
- if(!Number.isFinite(ms)){target.textContent='Prazo não informado pela operadora';return;}
+ if(!Number.isFinite(ms)){target.textContent='';return;}
  const tick=()=>{if(version!==checkoutVersion){clearInterval(pixTimer);return;}const left=Math.max(0,Math.ceil((ms-Date.now())/1000));target.textContent=left?('Tempo restante: '+String(Math.floor(left/60)).padStart(2,'0')+':'+String(left%60).padStart(2,'0')):'Prazo encerrado';if(!left){clearInterval(pixTimer);window.FunnelAnalytics?.track('pix_expired',selectedProduct,currentOrderId);showRegenerate(true,selectedProduct);}};tick();pixTimer=setInterval(tick,1000);
 }
 function showRegenerate(enabled,productId){const fresh=document.getElementById('pixRegenerate'),small=document.getElementById('pixSmallerPlan');if(!fresh)return;fresh.hidden=!enabled;small.hidden=!enabled||['monthly','ayla_monthly','whatsapp_unlock','ayla_whatsapp_unlock'].includes(productId);fresh.onclick=()=>location.assign('/continuar?order='+encodeURIComponent(currentOrderId)+'&regen=1');small.onclick=()=>location.assign('/continuar?order='+encodeURIComponent(currentOrderId)+'&smaller=1');}
@@ -459,7 +460,6 @@ async function refreshPendingPixNotice() {
       const countdown = document.createElement('small');
       const expiry = state.expiresAt ? Date.parse(String(state.expiresAt).replace(' ', 'T') + 'Z') : NaN;
       if (Number.isFinite(expiry)) countdown.dataset.pixExpires = String(expiry);
-      else countdown.textContent = 'Prazo não informado pela operadora';
       row.append(countdown);
     }
     row.append(button, dismiss); notice.append(row);
@@ -730,6 +730,7 @@ document.addEventListener('click', event => {
   const overlayModel = document.querySelector('.locked-overlay')?.innerHTML || '';
   if (!blueprint || !anchor) return;
 
+  const vistos = new Set();   // guarda contra card repetido ao paginar
   let rendered = 0;
   let total = 0;
   let carregando = false;
@@ -747,6 +748,7 @@ document.addEventListener('click', event => {
     const usados = [];
     previews.forEach((item, index) => {
       if (!item || typeof item.preview !== 'string' || !item.preview.startsWith('data:image/jpeg;base64,')) return;
+      if (item.id) { if (vistos.has(item.id)) return; vistos.add(item.id); }
       const header = blueprint.cloneNode(true);
       header.querySelector('.post-type')?.remove();
       const locked = document.createElement('div');
