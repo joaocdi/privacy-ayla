@@ -1,6 +1,8 @@
 // Independent Ayla profile. Replace placeholders through the existing ADMIN.
 const profile = {
   name: 'Ayla', username: '@ayla', verified: true,
+  // Localização exibida no perfil (com o pino, abaixo da bio).
+  location: 'Santa Catarina - BRA',
   avatar: '/avatar.jpg', cover: '/cover.jpg',
   bio: 'Perfil da Ayla em preparação. As mídias oficiais serão publicadas aqui.',
   // Base histórica do perfil: o que já existia antes deste site. É SOMADA ao

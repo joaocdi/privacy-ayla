@@ -10,6 +10,7 @@ async function read(db) {
 function present(row) {
   return { name: row?.name ?? defaults.name, username: row?.username ?? defaults.username,
     bio: row?.bio ?? defaults.bio, verified: Boolean(defaults.verified), stats: defaults.stats,
+    location: defaults.location || '',
     avatarCrop: crop.read(row?.avatar_crop, 'avatar'), coverCrop: crop.read(row?.cover_crop, 'cover'),
     avatar: '/api/profile/media/avatar?v=' + (row?.version || 0),
     cover: '/api/profile/media/cover?v=' + (row?.version || 0), version: row?.version || 0 };

@@ -130,6 +130,28 @@ function applyProfile(profile) {
  * As legendas abaixo são de apresentação. Nenhuma contagem de curtidas é
  * exibida aqui: números simulados não devem parecer engajamento real.
  */
+/**
+ * Busca resistente a instância fria.
+ *
+ * A função da Vercel pode levar mais de 8 segundos para acordar. Com o limite
+ * antigo, a primeira visita abortava sozinha e a página aparecia vazia, com
+ * aviso de erro — mesmo estando tudo certo no servidor. Aqui damos tempo e,
+ * se falhar, tentamos de novo: a segunda chamada já pega a função acordada.
+ */
+async function buscarResiliente(url, opcoes = {}, tentativas = 2, espera = 25000) {
+  let ultimo;
+  for (let n = 0; n < tentativas; n++) {
+    try {
+      const resposta = await fetch(url, { ...opcoes, signal: AbortSignal.timeout(espera) });
+      if (resposta.ok) return resposta;
+      ultimo = new Error('HTTP ' + resposta.status);
+      if (resposta.status < 500) throw ultimo;          // erro do pedido: repetir não ajuda
+    } catch (erro) { ultimo = erro; }
+    if (n + 1 < tentativas) await new Promise(r => setTimeout(r, 600));
+  }
+  throw ultimo || new Error('falha');
+}
+
 const HOME_CAPTIONS = [''];
 // Último perfil recebido da API: os cartões do feed são montados com ele.
 let perfilAtual = null;
@@ -700,13 +722,13 @@ document.addEventListener('click', event => {
   try {
     let changed = false;
     try { changed = sessionStorage.getItem('ayla.profile.changed') === '1'; sessionStorage.removeItem('ayla.profile.changed'); } catch (_) {}
-    const response = await fetch(API_BASE + '/api/profile', { cache: changed ? 'reload' : 'default', signal: AbortSignal.timeout(8000) });
-    if (!response.ok) throw new Error('Perfil indisponível');
+    const response = await buscarResiliente(API_BASE + '/api/profile', { cache: changed ? 'reload' : 'default' });
     const profile = await response.json();
     if (profile && typeof profile.name === 'string') applyProfile(profile);
   } catch (_) {
     document.body.classList.remove('carregando');
-    document.getElementById('profileBio').textContent = 'Não foi possível carregar o perfil. Atualize a página.';
+    // Com o perfil da última visita já na tela, não vale sujar com aviso de erro.
+    if (!perfilAtual) document.getElementById('profileBio').textContent = 'Não foi possível carregar o perfil. Atualize a página.';
   }
 })();
 
@@ -738,8 +760,7 @@ document.addEventListener('click', event => {
   let sentinela = null;
 
   async function buscar(offset) {
-    const response = await fetch(`${API_BASE}/api/home/previews?limit=${PAGE}&offset=${offset}`, { signal: AbortSignal.timeout(8000) });
-    if (!response.ok) throw new Error('previews');
+    const response = await buscarResiliente(`${API_BASE}/api/home/previews?limit=${PAGE}&offset=${offset}`);
     const data = await response.json();
     return { previews: Array.isArray(data.previews) ? data.previews : [], total: Number(data.total) || 0, managed: data.source === 'managed' };
   }
